@@ -1,0 +1,69 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Manuella poäng · {{ period.label }} · Admin · DAMP{% endblock %}
+{% block admin_content %}
+<section class="card">
+  <div class="card-head">
+    <h2>Manuella poäng · {{ period.label }}</h2>
+    <a href="{{ url_for('admin.periods') }}">← Alla LP</a>
+  </div>
+  <p class="muted">Poäng på ett datum utan placering, t.ex. totaler importerade från ett kalkylark. De räknas i topplistan, grafen och antal spelade kvällar, men inte i vinster, snittplacering eller wipes. "Räkna om poäng" ändrar dem inte.</p>
+  {% if entries %}
+  <div class="table-scroll">
+    <table class="data">
+      <thead><tr><th>Datum</th><th>Spelare</th><th class="num">Poäng</th><th>Notering</th><th></th></tr></thead>
+      <tbody>
+      {% for e in entries %}
+        <tr>
+          <td><input form="mp-{{ e.id }}" name="date" type="date" required value="{{ e.date.isoformat() }}" min="{{ period.starts_on.isoformat() }}" max="{{ period.ends_on.isoformat() }}" aria-label="Datum"></td>
+          <td class="nowrap"><a href="{{ url_for('admin.member_edit', member_id=e.member_id) }}">{{ e.member.name }}</a></td>
+          <td class="num"><input form="mp-{{ e.id }}" name="points" type="text" inputmode="decimal" required value="{{ e.points|points }}" style="width:6rem;text-align:right" aria-label="Poäng"></td>
+          <td><input form="mp-{{ e.id }}" name="note" type="text" maxlength="200" value="{{ e.note or '' }}" aria-label="Notering"></td>
+          <td class="nowrap num">
+            <form id="mp-{{ e.id }}" class="inline-form" method="post" action="{{ url_for('admin.manual_points_update', entry_id=e.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-ghost btn-sm" type="submit">Spara</button>
+            </form>
+            <form class="inline-form" method="post" action="{{ url_for('admin.manual_points_delete', entry_id=e.id) }}" data-confirm="Ta bort {{ e.member.name }}s {{ e.points|points }} poäng {{ e.date.isoformat() }}?">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-danger btn-sm" type="submit">Ta bort</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted small table-foot">{{ entries|length }} poster · totalt {{ total|points }} poäng</p>
+  {% else %}
+    <p class="placeholder">Inga manuella poäng i {{ period.label }}.</p>
+  {% endif %}
+</section>
+
+<section class="card" style="max-width:760px">
+  <h2>Lägg till</h2>
+  <form method="post" action="{{ url_for('admin.manual_points_add', period_id=period.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-row">
+      <div class="field">
+        <label for="mp-member">Spelare</label>
+        <input id="mp-member" name="member" type="text" list="mp-members" required autocomplete="off" placeholder="Namn eller LTU-id">
+        <datalist id="mp-members">{% for m in members %}<option value="{{ m.name }}">{% endfor %}</datalist>
+      </div>
+      <div class="field">
+        <label for="mp-date">Datum</label>
+        <input id="mp-date" name="date" type="date" required value="{{ default_date.isoformat() }}" min="{{ period.starts_on.isoformat() }}" max="{{ period.ends_on.isoformat() }}">
+      </div>
+      <div class="field">
+        <label for="mp-points">Poäng</label>
+        <input id="mp-points" name="points" type="text" inputmode="decimal" required placeholder="t.ex. 14,5">
+      </div>
+    </div>
+    <div class="field">
+      <label for="mp-note">Notering <span class="muted">(valfritt)</span></label>
+      <input id="mp-note" name="note" type="text" maxlength="200">
+    </div>
+    <button class="btn" type="submit">Lägg till</button>
+  </form>
+  <p class="muted small" style="margin-top:12px">Många på en gång (t.ex. från ett kalkylark): <code>uv run flask --app damp import-points fil.tsv --lp "{{ period.label }}" --date ÅÅÅÅ-MM-DD</code></p>
+</section>
+{% endblock %}

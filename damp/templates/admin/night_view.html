@@ -1,0 +1,32 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}{{ night.date.isoformat() }} · Admin · DAMP{% endblock %}
+{% block admin_content %}
+<section class="card">
+  <div class="card-head">
+    <h2>{{ night.date|long_date }} · {{ night.period.label }}</h2>
+    <div class="form-actions" style="margin:0">
+      <a class="btn btn-sm" href="{{ url_for('admin.night_edit', night_id=night.id) }}">Redigera</a>
+      <form class="inline-form" method="post" action="{{ url_for('admin.night_delete', night_id=night.id) }}" data-confirm="Radera kvällen {{ night.date.isoformat() }} och alla dess resultat?">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-danger btn-sm" type="submit">Radera</button>
+      </form>
+    </div>
+  </div>
+  {% if night.note %}<p class="muted">{{ night.note }}</p>{% endif %}
+</section>
+<div class="tables">
+  {% for t in night.tables %}
+  <section class="card">
+    <h2>Bord {{ t.table_no }} <span class="muted">· {{ t.results|length }} spelare</span></h2>
+    <table class="data">
+      <thead><tr><th class="num">#</th><th>Spelare</th><th class="num">Wipes</th><th class="num">Poäng</th></tr></thead>
+      <tbody>
+      {% for r in t.results %}
+        <tr><td class="num rank">{{ r.placement }}</td><td><a href="{{ url_for('admin.member_edit', member_id=r.member_id) }}">{{ r.member.name }}</a>{% if r.member.ltu_id %} <span class="muted">{{ r.member.ltu_id }}</span>{% endif %}</td><td class="num">{{ r.wipes }}</td><td class="num"><strong>{{ r.points|points }}</strong></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}

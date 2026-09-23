@@ -1,0 +1,28 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Nyheter · Admin · DAMP{% endblock %}
+{% block admin_content %}
+<section class="card">
+  <div class="card-head"><h2>Nyheter</h2><a class="btn btn-sm" href="{{ url_for('admin.news_new') }}">+ Ny nyhet</a></div>
+  {% if posts %}
+  <table class="data">
+    <thead><tr><th>Titel</th><th>Publicerad</th><th>Av</th><th></th></tr></thead>
+    <tbody>
+    {% for p in posts %}
+      <tr>
+        <td><a href="{{ url_for('admin.news_edit', post_id=p.id) }}">{{ p.title }}</a></td>
+        <td class="nowrap">{{ p.published_at.date().isoformat() }}</td>
+        <td class="muted">{{ p.author.username if p.author else '–' }}</td>
+        <td class="num nowrap">
+          <a class="btn btn-ghost btn-sm" href="{{ url_for('public.news_post', post_id=p.id) }}">Visa</a>
+          <form class="inline-form" method="post" action="{{ url_for('admin.news_delete', post_id=p.id) }}" data-confirm="Radera nyheten?">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-danger btn-sm" type="submit">Radera</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="placeholder">Inga nyheter ännu.</p>{% endif %}
+</section>
+{% endblock %}

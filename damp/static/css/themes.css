@@ -1,0 +1,198 @@
+/* Theme tokens. app.css only ever references these variables.
+   Chart palettes (--chart-1..4) are validated with the dataviz validator
+   against each theme's card surface (CVD + normal-vision separation). */
+
+:root,
+[data-theme="data"] {
+  color-scheme: light;
+  --font: "Open Sans", Roboto, system-ui, sans-serif;
+  --font-head: var(--font);
+
+  --page-bg: #ffcc11;            /* Datasektionen data-yel: the page wrapper is yellow */
+  --page-bg-image: none;
+  --page-text: #992222;          /* text sitting directly on the page (headings outside cards) */
+  --page-text-2: #7b2121;
+  --heading: #992222;
+
+  --surface: #ffffff;
+  --surface-2: #f3f4f6;
+  --surface-hover: #e5e7eb;
+  --border: #e5e7eb;
+  --border-strong: #111111;
+  --text: #111827;
+  --text-2: #374151;
+  --text-muted: #6b7280;
+
+  --accent: #992222;             /* links + primary actions inside cards */
+  --accent-hover: #7b2121;
+  --btn-bg: #992222;             /* like Datasektionen's buttons: red with yellow text */
+  --btn-bg-hover: #ffcc11;
+  --btn-text: #ffcc11;
+  --btn-text-hover: #992222;
+  --btn-border: #992222;
+  --focus: #111111;
+
+  --nav-bg: #992222;
+  --nav-text: #ffcc11;
+  --nav-text-hover: #ffffff;
+  --nav-border: 0 0 0 0 transparent;
+  --nav-border-bottom: 2px solid #000000;
+  --footer-border-top: 2px solid #000000;
+
+  --card-radius: 0;
+  --card-border: 0;
+  --card-top: 4px solid #992222;
+  --card-shadow: 0 1px 3px rgba(75, 85, 99, 0.6), 0 1px 2px rgba(75, 85, 99, 0.4);
+  --card-blur: none;
+  --radius-sm: 0;
+  --pill-radius: 0;
+
+  --ok: #0a7a2f;
+  --ok-bg: #dcfce7;
+  --warn: #8a5a00;
+  --warn-bg: #fef3c7;
+  --danger: #b91c1c;
+  --danger-bg: #fee2e2;
+
+  --chart-grid: #eceae4;
+  --chart-axis: #6b7280;
+  --chart-muted: #cfccc5;
+  --chart-muted-dim: #e7e5e0;
+  --chart-1: #2a78d6;
+  --chart-2: #eb6834;
+  --chart-3: #1baf7a;
+  --chart-4: #4a3aa7;
+  --chart-selected: #992222;
+  --chart-selected-2: #992222;
+  --chart-selected-3: #992222;
+}
+
+[data-theme="slop"] {
+  color-scheme: dark;
+  --font: "Inter", system-ui, sans-serif;
+  --font-head: "Inter", system-ui, sans-serif;
+
+  --page-bg: #0b0a1f;
+  --page-bg-image:
+    radial-gradient(60vw 60vw at 10% -10%, rgba(124, 58, 237, 0.45), transparent 60%),
+    radial-gradient(50vw 50vw at 100% 10%, rgba(219, 39, 119, 0.35), transparent 60%),
+    radial-gradient(60vw 60vw at 50% 120%, rgba(8, 145, 178, 0.35), transparent 60%);
+  --page-text: #f5f3ff;
+  --page-text-2: #c4b5fd;
+  --heading: var(--text);
+
+  --surface: rgba(22, 19, 45, 0.72);
+  --surface-2: rgba(255, 255, 255, 0.05);
+  --surface-hover: rgba(167, 139, 250, 0.14);
+  --border: rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 255, 255, 0.22);
+  --text: #f5f3ff;
+  --text-2: #cbc6ef;
+  --text-muted: #9690c4;
+
+  --accent: #c4b5fd;
+  --accent-hover: #f0abfc;
+  --btn-bg: linear-gradient(135deg, #7c3aed 0%, #db2777 55%, #f59e0b 100%);
+  --btn-bg-hover: linear-gradient(135deg, #8b5cf6 0%, #ec4899 55%, #fbbf24 100%);
+  --btn-text: #ffffff;
+  --btn-border: transparent;
+  --focus: #f0abfc;
+
+  --nav-bg: rgba(11, 10, 31, 0.6);
+  --nav-text: #e9e5ff;
+  --nav-text-hover: #ffffff;
+  --nav-border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  --footer-border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+  --card-radius: 22px;
+  --card-border: 1px solid rgba(255, 255, 255, 0.10);
+  --card-top: 1px solid rgba(255, 255, 255, 0.18);
+  --card-shadow: 0 0 0 1px rgba(124, 58, 237, 0.12), 0 20px 60px -20px rgba(124, 58, 237, 0.55),
+    0 0 80px -30px rgba(219, 39, 119, 0.5);
+  --card-blur: blur(18px) saturate(140%);
+  --radius-sm: 12px;
+  --pill-radius: 999px;
+
+  --ok: #6ee7b7;
+  --ok-bg: rgba(16, 185, 129, 0.16);
+  --warn: #fcd34d;
+  --warn-bg: rgba(245, 158, 11, 0.16);
+  --danger: #fda4af;
+  --danger-bg: rgba(244, 63, 94, 0.16);
+
+  --chart-grid: rgba(255, 255, 255, 0.07);
+  --chart-axis: #9690c4;
+  --chart-muted: rgba(196, 181, 253, 0.26);
+  --chart-muted-dim: rgba(196, 181, 253, 0.12);
+  --chart-1: #0891b2;
+  --chart-2: #db2777;
+  --chart-3: #7c3aed;
+  --chart-4: #059669;
+  --chart-selected: #a78bfa;
+  --chart-selected-2: #f472b6;
+  --chart-selected-3: #22d3ee;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --font: "Inter", system-ui, sans-serif;
+  --font-head: "Fraunces", Georgia, serif;
+
+  --page-bg: #0f1411;
+  --page-bg-image:
+    radial-gradient(120vw 70vh at 50% -20%, rgba(35, 150, 21, 0.14), transparent 70%),
+    radial-gradient(80vw 60vh at 100% 110%, rgba(151, 35, 36, 0.16), transparent 70%);
+  --page-text: #efe6e1;
+  --page-text-2: #bfb1ab;
+  --heading: var(--text);
+
+  --surface: #1e1718;
+  --surface-2: #261d1e;
+  --surface-hover: #2f2324;
+  --border: #3a2c2d;
+  --border-strong: #5a4344;
+  --text: #efe6e1;
+  --text-2: #cdbfb9;
+  --text-muted: #9a8a84;
+
+  --accent: #6fcf7c;
+  --accent-hover: #9be3a4;
+  --btn-bg: #972324;
+  --btn-bg-hover: #b02b2c;
+  --btn-text: #fff5f2;
+  --btn-border: #b43a3b;
+  --focus: #6fcf7c;
+
+  --nav-bg: rgba(20, 16, 17, 0.92);
+  --nav-text: #e9dcd6;
+  --nav-text-hover: #ffffff;
+  --nav-border-bottom: 1px solid #3a2c2d;
+  --footer-border-top: 1px solid #2c2223;
+
+  --card-radius: 12px;
+  --card-border: 1px solid #2f2425;
+  --card-top: 3px solid #7a1c1d;
+  --card-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.7);
+  --card-blur: none;
+  --radius-sm: 8px;
+  --pill-radius: 999px;
+
+  --ok: #7ed98a;
+  --ok-bg: rgba(35, 150, 21, 0.18);
+  --warn: #e7b27a;
+  --warn-bg: rgba(200, 120, 40, 0.16);
+  --danger: #f19b9b;
+  --danger-bg: rgba(151, 35, 36, 0.28);
+
+  --chart-grid: #2c2223;
+  --chart-axis: #9a8a84;
+  --chart-muted: #4d3d3e;
+  --chart-muted-dim: #33282a;
+  --chart-1: #3987e5;
+  --chart-2: #d95926;
+  --chart-3: #199e70;
+  --chart-4: #9085e9;
+  --chart-selected: #5cc46a;
+  --chart-selected-2: #5cc46a;
+  --chart-selected-3: #5cc46a;
+}

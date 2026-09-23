@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Om DAMP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Om DAMP</h1></div>
+<section class="card">
+  <div class="about-hero">
+    <img src="{{ url_for('static', filename='img/logo_DAMP.png') }}" alt="DAMP-loggan: en tvättbjörn med solglasögon och hawaiiskjorta vid ett pokerbord" width="220" height="220">
+    <div class="prose">
+      <h2>Datasektionens Allmänna Mötesplats för Poker</h2>
+      <p>DAMP är Datasektionens pokerförening vid Luleå tekniska universitet. Vi är ett glatt gäng som gillar poker, och alla är välkomna oavsett om du aldrig har hållit i en giv eller spelar varje vecka.</p>
+      <p>Varje tisdag spelar vi en turnering. Beroende på placering tar du poäng, och poängen samlas under hela läsperioden. Följ ställningen på <a href="{{ url_for('public.index') }}">topplistan</a>.</p>
+      <dl class="facts">
+        <div><dt>När</dt><dd>Varje tisdag 18:30</dd></div>
+        <div><dt>Var</dt><dd>A3101C, A-huset</dd></div>
+        <div><dt>Kontakt</dt><dd><a href="mailto:damp-ordf@datasektionen.com">damp-ordf@datasektionen.com</a></dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+<div class="grid-2">
+  <section class="card"><div class="prose">
+    <h2>Större event</h2>
+    <p>Utöver tisdagarna håller vi några större event varje år, till exempel:</p>
+    <ul>
+      <li><strong>Dork Vegas</strong>, tillsammans med DORK</li>
+      <li><strong>Porsö Games</strong></li>
+      <li>Pokerkväll under nØllningen, tillsammans med sektionens andra spelföreningar</li>
+    </ul>
+    <p>Håll koll på <a href="{{ url_for('public.news') }}">nyheterna</a> för datum.</p>
+  </div></section>
+  <section class="card"><div class="prose">
+    <h2>Poäng och läsperioder</h2>
+    <p>Poängen räknas per läsperiod (LP 1–4) och läsår, till exempel <em>LP1 26/27</em>. Varje bord räknas för sig, och ju fler spelare vid bordet desto fler poäng att ta.</p>
+    <p>För att vara med i poängligan behöver du vara medlem. Medlemskapet gäller ett år från betalningsdagen.</p>
+  </div></section>
+</div>
+{% endblock %}

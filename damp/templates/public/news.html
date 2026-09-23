@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Nyheter · DAMP{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Nyheter</h1></div>
+<section class="card">
+  {% if posts.items %}
+  <ul class="news-list">
+    {% for post in posts.items %}
+    <li>
+      <a href="{{ url_for('public.news_post', post_id=post.id) }}">
+        <strong>{{ post.title }}</strong>
+        <time datetime="{{ post.published_at.date().isoformat() }}">{{ post.published_at.date()|long_date }}</time>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% if posts.pages > 1 %}
+  <nav class="pagination" aria-label="Sidor">
+    {% if posts.has_prev %}<a class="btn btn-ghost btn-sm" href="{{ url_for('public.news', sida=posts.prev_num) }}">← Nyare</a>{% endif %}
+    {% if posts.has_next %}<a class="btn btn-ghost btn-sm" href="{{ url_for('public.news', sida=posts.next_num) }}">Äldre →</a>{% endif %}
+  </nav>
+  {% endif %}
+  {% else %}
+  <p class="placeholder">Inga nyheter än.</p>
+  {% endif %}
+</section>
+{% endblock %}

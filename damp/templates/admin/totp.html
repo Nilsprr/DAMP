@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Verifiera · DAMP admin{% endblock %}
+{% block content %}
+<section class="card auth-card">
+  <h1>Tvåstegsverifiering</h1>
+  <p>Ange den 6-siffriga koden från din autentiseringsapp.</p>
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field">
+      <label for="code">Kod</label>
+      <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,7}" maxlength="7" required autofocus>
+    </div>
+    <button class="btn" type="submit">Logga in</button>
+  </form>
+</section>
+{% endblock %}

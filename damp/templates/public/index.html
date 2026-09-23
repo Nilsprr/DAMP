@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Topplista{% if period %} · {{ period.label }}{% endif %} · DAMP{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Topplista{% if period %} {{ period.label }}{% endif %}</h1>
+    <p>Poäng från tisdagsturneringarna, uppdateras efter varje kväll.</p>
+  </div>
+  {% if periods %}
+  <form class="controls" method="get" action="{{ url_for('public.index') }}" role="search">
+    <label class="sr-only" for="lp-select">Läsperiod</label>
+    <select id="lp-select" name="lp" aria-label="Läsperiod">
+      {% for p in periods %}<option value="{{ p.id }}" {% if period and p.id == period.id %}selected{% endif %}>{{ p.label }}</option>{% endfor %}
+    </select>
+    <noscript><button class="btn btn-sm" type="submit">Visa</button></noscript>
+    <div class="search">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6"/><path d="m13 13 5 5" stroke-linecap="round"/></svg>
+      <input id="player-search" type="search" placeholder="Sök spelare…" autocomplete="off"
+             role="combobox" aria-expanded="false" aria-controls="player-suggest" aria-label="Sök spelare">
+      <ul id="player-suggest" class="suggest" role="listbox" hidden></ul>
+    </div>
+  </form>
+  {% endif %}
+</div>
+
+{% if not period %}
+  <section class="card"><p class="placeholder">Inga läsperioder ännu. Kom tillbaka efter första kvällen!</p></section>
+{% else %}
+  <section class="card" aria-labelledby="chart-title">
+    <div class="card-head">
+      <h2 id="chart-title">Poäng över tid</h2>
+      <span class="muted">{{ data.nights|length }} {{ 'kväll' if data.nights|length == 1 else 'kvällar' }} · {{ data.players|length }} spelare</span>
+    </div>
+    <ul class="legend" id="chart-legend" aria-label="Förklaring"></ul>
+    <div class="chart-wrap">
+      {% if data.nights %}
+        <canvas id="points-chart" role="img" aria-label="Linjediagram: ackumulerade poäng per spelare och kväll i {{ period.label }}. Samma siffror finns i tabellen nedan."></canvas>
+      {% else %}
+        <div class="chart-empty"><p>Inga kvällar spelade i {{ period.label }} än.</p></div>
+      {% endif %}
+    </div>
+  </section>
+
+  <div class="grid-2">
+    <section class="card" aria-labelledby="board-title">
+      <div class="card-head">
+        <h2 id="board-title">Ställning</h2>
+        <span class="muted">Klicka på en spelare</span>
+      </div>
+      {% if data.players %}
+      <div class="table-scroll">
+        <table class="data" id="leaderboard">
+          <thead>
+            <tr>
+              <th scope="col" class="num">#</th>
+              <th scope="col">Spelare</th>
+              <th scope="col" class="num">Poäng</th>
+              <th scope="col" class="num hide-sm" title="Antal spelade kvällar">Kvällar</th>
+              <th scope="col" class="num" title="Antal 1:a placeringar">Vinster</th>
+              <th scope="col" class="num hide-sm" title="Snittplacering">Snitt</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in data.players %}
+            <tr class="clickable" data-player="{{ p.id }}">
+              <td class="num rank rank-{{ p.rank }}">{{ p.rank }}</td>
+              <td>
+                <span class="player-cell">
+                  <span class="line-key" aria-hidden="true"></span>
+                  <button type="button" class="player-btn">{{ p.name }}</button>
+                </span>
+              </td>
+              <td class="num"><strong>{{ p.points|points }}</strong></td>
+              <td class="num hide-sm">{{ p.nights }}</td>
+              <td class="num">{{ p.wins if p.wins is not none else '–' }}</td>
+              <td class="num hide-sm">{{ p.avg|decimal }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if data.players|selectattr('has_manual')|list %}
+        <p class="muted small table-foot">– = placering saknas (poäng utan placering, t.ex. importerade).</p>
+      {% endif %}
+      {% else %}
+        <p class="placeholder">Ingen har tagit poäng i {{ period.label }} än.</p>
+      {% endif %}
+    </section>
+
+    <div class="stack">
+      <section class="card" id="player-card" aria-live="polite">
+        <div id="player-empty">
+          <h2>Spelarstatistik</h2>
+          <p class="placeholder">Välj en spelare i tabellen eller sök för att se statistik och markera kurvan i grafen.</p>
+        </div>
+        <div id="player-detail" hidden>
+          <div class="player-head">
+            <h2><span class="line-key" aria-hidden="true"></span><span id="pd-name"></span></h2>
+            <button type="button" class="btn btn-ghost btn-sm" id="pd-clear">Rensa</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat"><div class="label">Placering</div><div class="value" id="pd-rank"></div></div>
+            <div class="stat"><div class="label">Poäng</div><div class="value" id="pd-points"></div></div>
+            <div class="stat"><div class="label">Spelade kvällar</div><div class="value" id="pd-nights"></div></div>
+            <div class="stat"><div class="label">1:a placeringar</div><div class="value" id="pd-wins"></div></div>
+            <div class="stat"><div class="label">Snittplacering</div><div class="value" id="pd-avg"></div></div>
+            <div class="stat"><div class="label">Wipes <span class="coming-soon">(kommer snart)</span></div><div class="value" id="pd-wipes"></div></div>
+          </div>
+          <p class="muted small" id="pd-manual-note" hidden>Poäng utan placering (t.ex. importerade) räknas i poäng och spelade kvällar, men inte i placeringar, snitt eller wipes.</p>
+          <div class="table-scroll">
+            <table class="data">
+              <thead><tr><th scope="col">Kväll</th><th scope="col" class="num">Bord</th><th scope="col" class="num">Placering</th><th scope="col" class="num">Poäng</th></tr></thead>
+              <tbody id="pd-results"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {% if news %}
+      <section class="card" aria-labelledby="news-title">
+        <div class="card-head"><h2 id="news-title">Senaste nytt</h2><a href="{{ url_for('public.news') }}">Alla nyheter</a></div>
+        <ul class="news-list">
+          {% for post in news %}
+          <li><a href="{{ url_for('public.news_post', post_id=post.id) }}"><strong>{{ post.title }}</strong><time datetime="{{ post.published_at.date().isoformat() }}">{{ post.published_at.date()|long_date }}</time></a></li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if period %}
+<script id="lp-data" type="application/json">{{ data|tojson }}</script>
+<script src="{{ url_for('static', filename='vendor/chart.umd.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/standings.js') }}"></script>
+{% endif %}
+{% endblock %}

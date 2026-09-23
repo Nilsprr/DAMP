@@ -1,0 +1,36 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Admin · DAMP{% endblock %}
+{% block admin_content %}
+<div class="kpis">
+  <div class="card"><div class="muted">Aktuellt LP</div><div class="stat-value"><strong>{{ period.label if period else '–' }}</strong></div>{% set n = period.point_dates|length if period else 0 %}<div class="muted">{{ n }} {{ 'kväll' if n == 1 else 'kvällar' }} med poäng</div></div>
+  <div class="card"><div class="muted">Aktiva medlemmar</div><div class="stat-value"><strong>{{ active_count }}</strong></div><div class="muted">av {{ member_count }} registrerade</div></div>
+  <div class="card"><div class="muted">Går ut inom 30 dagar</div><div class="stat-value"><strong>{{ expiring|length }}</strong></div><div class="muted"><a href="{{ url_for('admin.members', filter='snart') }}">Visa</a></div></div>
+</div>
+<div class="grid-2" style="margin-top:0">
+  <section class="card">
+    <div class="card-head"><h2>Senaste kvällar</h2><a class="btn btn-sm" href="{{ url_for('admin.night_new') }}">+ Ny kväll</a></div>
+    {% if recent %}
+    <table class="data">
+      <thead><tr><th>Datum</th><th>LP</th><th class="num">Bord</th><th class="num">Spelare</th></tr></thead>
+      <tbody>
+      {% for n in recent %}
+        <tr><td><a href="{{ url_for('admin.night_view', night_id=n.id) }}">{{ n.date|long_date }}</a></td><td>{{ n.period.label }}</td><td class="num">{{ n.tables|length }}</td><td class="num">{{ n.player_count }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<p class="placeholder">Inga kvällar ännu.</p>{% endif %}
+  </section>
+  <section class="card">
+    <div class="card-head"><h2>Medlemskap som går ut snart</h2></div>
+    {% if expiring %}
+    <table class="data">
+      <tbody>
+      {% for m, s in expiring %}
+        <tr><td><a href="{{ url_for('admin.member_edit', member_id=m.id) }}">{{ m.name }}</a></td><td class="num">{{ s.days_left }} dagar</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<p class="placeholder">Inga medlemskap går ut de närmaste 30 dagarna.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

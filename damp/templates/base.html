@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="sv" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}DAMP{% endblock %}</title>
+  <meta name="description" content="DAMP, Datasektionens Allmänna Mötesplats för Poker vid LTU. Poängliga, resultat och nyheter.">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=Open+Sans:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/themes.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <a class="skip" href="#main">Hoppa till innehåll</a>
+  <header class="site-nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="{{ url_for('public.index') }}">
+        <img src="{{ url_for('static', filename='img/logo_256.png') }}" alt="" width="44" height="44">
+        <span>DAMP</span>
+      </a>
+      {% set ep = request.endpoint or '' %}
+      <nav class="nav-links" aria-label="Huvudmeny">
+        <a href="{{ url_for('public.index') }}" {% if ep == 'public.index' %}aria-current="page"{% endif %}>Topplista</a>
+        <a href="{{ url_for('public.news') }}" {% if ep.startswith('public.news') %}aria-current="page"{% endif %}>Nyheter</a>
+        <a href="{{ url_for('public.about') }}" {% if ep == 'public.about' %}aria-current="page"{% endif %}>Om DAMP</a>
+        {% if g.admin %}<a href="{{ url_for('admin.dashboard') }}" {% if ep.startswith('admin.') %}aria-current="page"{% endif %}>Admin</a>{% endif %}
+      </nav>
+      <div class="theme-switch" role="group" aria-label="Färgtema">
+        {% for key, label in THEMES %}<button type="button" data-theme-choice="{{ key }}" aria-pressed="false">{{ label }}</button>{% endfor %}
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    {% block flashes %}{% include "_flashes.html" %}{% endblock %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>DAMP · Datasektionens Allmänna Mötesplats för Poker · LTU</span>
+      <a href="mailto:damp-ordf@datasektionen.com">damp-ordf@datasektionen.com</a>
+    </div>
+  </footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

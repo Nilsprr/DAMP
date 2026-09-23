@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block head %}<meta name="csrf-token" content="{{ csrf_token() }}">{% endblock %}
+{% block flashes %}{% endblock %}
+{% block content %}
+{% set ep = request.endpoint or '' %}
+<nav class="admin-nav" aria-label="Adminmeny">
+  <a href="{{ url_for('admin.dashboard') }}" {% if ep == 'admin.dashboard' %}aria-current="page"{% endif %}>Översikt</a>
+  <a href="{{ url_for('admin.night_new') }}" {% if ep == 'admin.night_new' %}aria-current="page"{% endif %}>+ Ny kväll</a>
+  <a href="{{ url_for('admin.nights') }}" {% if ep in ('admin.nights', 'admin.night_view', 'admin.night_edit') %}aria-current="page"{% endif %}>Kvällar</a>
+  <a href="{{ url_for('admin.members') }}" {% if ep.startswith('admin.member') %}aria-current="page"{% endif %}>Medlemmar</a>
+  <a href="{{ url_for('admin.periods') }}" {% if ep.startswith('admin.period') %}aria-current="page"{% endif %}>LP</a>
+  <a href="{{ url_for('admin.news') }}" {% if ep.startswith('admin.news') %}aria-current="page"{% endif %}>Nyheter</a>
+  <a href="{{ url_for('admin.audit_log') }}" {% if ep == 'admin.audit_log' %}aria-current="page"{% endif %}>Logg</a>
+  <span class="spacer"></span>
+  <span class="who">Inloggad som {{ g.admin.username }}</span>
+  <form method="post" action="{{ url_for('admin.auth_logout') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit">Logga ut</button>
+  </form>
+</nav>
+{% include "_flashes.html" %}
+{% block admin_content %}{% endblock %}
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/admin.js') }}"></script>{% endblock %}
