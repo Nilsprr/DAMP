@@ -1,0 +1,25 @@
+# LP1 26/27: poängställning, alla poäng lagda på 2026-09-22.
+# Import: uv run flask --app damp import-points data/lp1-26-27.tsv --lp "LP1 26/27" --date 2026-09-22
+Harald	9
+Ludvig	11
+Ian	17
+CJ	12
+Leo	3
+Munib	8
+Erik	25
+Jonathan Edlund	20
+Kjelle	14
+Liam	14,5
+Sebastian	24
+Sarition	4
+Sasha	10
+Jonathan Steinbrecher	20
+Slalle	23
+Casper	6
+Joel	7
+Adam Askeblad	18
+Ilia	12
+Kevin Lagerqvist	3
+Ture	15
+Jonathan Hedström	2
+Firat	4

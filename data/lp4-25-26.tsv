@@ -1,0 +1,5 @@
+# LP4 25/26: slutställning. Bara totalerna är riktiga; fördelningen per kväll är slumpad (--spread).
+# Import: uv run flask --app damp import-points data/lp4-25-26.tsv --lp "LP4 25/26" --spread --seed 2526
+Eve	45
+Tales	44
+Dobbe	20
