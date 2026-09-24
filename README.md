@@ -1,5 +1,7 @@
 # DAMP
 
+obs: README claudad
+
 Poängliga för DAMP (Datasektionens Allmänna Mötesplats för Poker, LTU).
 
 - **Publik sida:** topplista per LP, graf över poäng över tid, sök och välj spelare, nyheter, om DAMP.
