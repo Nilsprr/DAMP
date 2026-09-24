@@ -1,79 +1,94 @@
 # DAMP
 
-Poängliga och medlemsregister för DAMP (Datasektionens Allmänna Mötesplats för Poker, LTU).
+Poängliga för DAMP (Datasektionens Allmänna Mötesplats för Poker, LTU).
 
-- **Publik sida** (ingen inloggning, bara läsning): topplista per LP, graf över poäng över tid, sök och välj spelare, nyheter, om DAMP.
-- **Admin** (`/admin`, lösenord + TOTP): lägg in kvällar bord för bord med förhandsvisning av poäng, hantera medlemmar och betalningar, LP, nyheter, ändringslogg.
+- **Publik sida:** topplista per LP, graf över poäng över tid, sök och välj spelare, nyheter, om DAMP.
+- **Admin (`/admin`):** lägg in ett bord i taget med förhandsvisning av poäng, och hantera medlemmar, LP, manuella poäng och nyheter. Alla ändringar loggas i historiken, som går att filtrera per LP.
 
-Flask + Jinja + SQLite, med vanilla JS och Chart.js (vendorad, inget byggsteg).
+## Så funkar det
 
-## Kom igång
+Sidan är **helt statisk** och kostar bara domänen. Det finns ingen server och ingen databas.
+
+```
+data/*.json  ──(python -m damp.build)──▶  dist/  ──▶  Cloudflare Pages (publik sida + /admin)
+     ▲                                                          │
+     └──── commit via GitHub ◀── Pages Function /admin/api ◀────┘  (bakom Cloudflare Access)
+```
+
+- **All data är JSON-filer i `data/`.** Formatet beskrivs överst i [damp/store.py](damp/store.py).
+- **Bygget** ([damp/build.py](damp/build.py)) validerar datan och renderar alla sidor till `dist/`. Är datan ogiltig byggs sidan inte, och den gamla ligger kvar.
+- **Admin** är statisk JS ([damp/static/admin/](damp/static/admin/)). I produktion sparar den via en Cloudflare Pages Function ([functions/admin/api/\[\[path\]\].js](functions/admin/api/[[path]].js)). Funktionen committar ändringen till GitHub, och då bygger Cloudflare om sidan (ungefär en minut).
+- **Inloggning** sköts av Cloudflare Access (Google, även @datasektionen.com-konton) mot en lista med tillåtna adresser. Varje ändring blir en commit, så **git-historiken är både ändringslogg och backup**.
+
+Uppsättning: [docs/cloudflare.md](docs/cloudflare.md) (Pages, Access, domän) och [docs/github-app.md](docs/github-app.md) (nyckeln som låter admin spara).
+
+## Kör lokalt
 
 ```bash
 uv sync
-uv run flask --app damp db upgrade          # skapar instance/damp.db
-uv run flask --app damp create-admin nils   # frågar efter lösenord (minst 12 tecken)
 uv run flask --app damp run --debug
 ```
 
-Öppna http://127.0.0.1:5000 och sedan `/admin/login`. Första inloggningen visar en QR-kod att skanna med en autentiseringsapp.
+Öppna http://127.0.0.1:5000. Admin finns på http://127.0.0.1:5000/admin/.
 
-### Befintliga poäng (från kalkylarket)
+**Lokalt finns ingen inloggning.** Admin skriver då direkt till filerna i `data/` via [damp/devapi.py](damp/devapi.py), som bara finns lokalt och aldrig publiceras. Datan valideras innan något skrivs. Committa ändringarna med git som vanligt.
 
-`data/` innehåller ställningarna som fanns innan sajten. Skapa LP:na under Admin → LP och importera sedan:
+Bygga som i produktion:
 
 ```bash
-uv run flask --app damp import-points data/lp1-26-27.tsv --lp "LP1 26/27" --date 2026-09-22
-uv run flask --app damp import-points data/lp4-25-26.tsv --lp "LP4 25/26" --spread --seed 2526
+uv run python -m damp.build          # -> dist/
+python -m http.server -d dist 8000   # titta på resultatet (admin kan inte spara här)
 ```
 
-Filerna har en rad per spelare, `namn<TAB>poäng`, precis som när man kopierar två kolumner från ett kalkylark (decimalkomma går bra). Poängen blir *manuella poäng*: de har ett datum men ingen placering. De räknas i topplistan, grafen och antal spelade kvällar, men inte i vinster, snitt eller wipes. Namn som inte finns bland medlemmarna läggs till som nya medlemmar, utan startdatum och utan betalning.
+## Poängsystemet
 
-`--spread` hittar på en kurva: varje total fördelas slumpmässigt över LP:ets tisdagar. Bara totalen är riktig. Enskilda poster kan rättas eller tas bort under Admin → LP → Manuella poäng.
+Poängen räknas i **`damp/scoring.py` → `points_for(placement, table_size, wipes)`**. Admin kör i webbläsaren, så bygget gör om funktionen till en tabell (`/admin/poang.json`). Bordseditorn tar både förhandsvisningen och de sparade poängen därifrån, så de stämmer alltid överens.
 
-## Ändra poängsystemet
-
-Poängen räknas i **`damp/scoring.py` → `points_for(placement, table_size, wipes)`**. Admin-förhandsvisningen och commit anropar samma funktion.
-
-Poängen sparas på varje resultat när kvällen committas, och decimaler (t.ex. 14,5) går bra. Efter en ändring i funktionen, räkna om gamla resultat:
+**Poängen sparas i varje bordsfil.** En ändrad funktion påverkar bara bord som sparas efter nästa deploy. Så här räknar du om gamla bord:
 
 - Admin → LP → **Räkna om poäng**, eller
-- `uv run flask --app damp recalc-points` (alla LP), `--lp <id>` för ett LP.
+- `uv run flask --app damp recalc-points [--lp "LP1 26/27"]`
 
-## Admin-CLI
+Redigerar du ett gammalt bord efter att funktionen har ändrats, varnar editorn att bordet räknas om när du sparar.
 
-| Kommando | Vad |
-|---|---|
-| `create-admin <namn>` | Nytt adminkonto (inga konton kan skapas via webben) |
-| `set-password <namn>` | Byt lösenord |
-| `reset-totp <namn>` | Tappad telefon: ny QR-kod vid nästa inloggning |
-| `delete-admin <namn>` | Ta bort konto |
-| `list-admins` | Lista konton |
-| `recalc-points [--lp id]` | Räkna om poäng med nuvarande `points_for` (manuella poäng påverkas inte) |
-| `import-points FIL --lp "LP1 26/27" (--date D \| --spread) [--replace]` | Importera `namn poäng`-rader som manuella poäng |
+## Historik
 
-Alla körs som `uv run flask --app damp <kommando>`.
+**Varje ändring loggas**: bord, medlemmar, LP, manuella poäng och nyheter. Loggen innehåller vem, när och vad (för bord hela resultatet, för ändringar före → efter). Den sparas i `data/history/ÅÅÅÅ-MM.json` i samma commit som ändringen. Servern skriver loggen, så admins kan inte ändra eller ta bort händelser. Varje händelse vet vilka LP den rör, så historiken i admin kan filtreras per LP, inklusive när LP:t skapades. Även `import-points` och `recalc-points` loggar.
 
-## Regler i koden
+## Manuella poäng
 
-- Medlemskap gäller 1 år (eller N år) från betalningsdagen. Betalar man i förtid läggs tiden på slutet. Logik: `damp/membership.py`.
-- En spelare måste ha aktivt medlemskap **på kvällens datum** för att kunna läggas till. Utgångna medlemmar kan förnyas direkt i kvällseditorn ("Förnya nu").
-- Varje bord poängsätts för sig. En medlem kan bara vara med vid ett bord per kväll, och det kan bara finnas en kväll per datum.
-- Den publika sidan visar visningsnamn (eller namn), aldrig LTU-id.
+Poäng med datum men utan placering, till exempel totaler från ett kalkylark. De räknas i topplistan och grafen, men inte som spelade bord, vinster, snitt eller wipes. Enstaka poster läggs in och ändras under Admin → Manuella poäng. Många på en gång (en fil med `namn poäng`-rader) importeras från kommandoraden:
+
+```bash
+uv run flask --app damp import-points fil.tsv --lp "LP1 26/27" --date 2026-09-22
+uv run flask --app damp import-points fil.tsv --lp "LP4 25/26" --spread --seed 2526   # fiktiv kurva över LP:ets tisdagar
+```
+
+Ställningarna från innan sajten fanns (`data/*.tsv`) är redan importerade till `data/manual-points.json`.
+
+## Regler (kontrolleras i bygget och i admin)
+
+- Varje bord poängsätts för sig. Spelarna står i placeringsordning, och ett bord har minst 2 spelare.
+- Ett datum kan ha flera bord (`tables/2026-09-22-1.json`, `-2`, …). En medlem kan bara vara med en gång per bord, men kan spela flera bord samma dag (editorn visar det).
+- Bord och manuella poäng hör till det LP vars datum de ligger inom. LP får inte överlappa.
+- En medlem har förnamn, efternamn, LTU-id, medlem sedan och ett valfritt visningsnamn. Namn, LTU-id och visningsnamn är unika.
+- Topplistan visar visningsnamnet, annars förnamnet (med efternamnets initial om två har samma förnamn, t.ex. "Nils S."). Klickar man på en spelare visas hela namnet: förnamn "visningsnamn" efternamn. LTU-id visas aldrig publikt.
 
 ## Struktur
 
 ```
-damp/scoring.py      poängfunktionen
-damp/membership.py   medlemskapsperioder
-damp/nights.py       validering + sparande av kvällar
-damp/manual.py       manuella poäng: tolka inklistrade listor, import, --spread
-damp/stats.py        ställning, kurvor, spelarstatistik
-damp/public.py       publika sidor (endast GET)
-damp/admin/          inloggning, adminsidor, JSON-API för kvällseditorn
-damp/static/css/themes.css   färgtemana DATA / AI SLOP / DARK
-migrations/          Alembic (flask db migrate / upgrade)
-data/                poäng från innan sajten fanns (för import-points)
+data/                    all data (JSON), det enda admin skriver till
+damp/store.py            läser och validerar data/ (dataformatet beskrivs här)
+damp/scoring.py          poängfunktionen
+damp/stats.py            ställning, kurvor, spelarstatistik
+damp/public.py           publika sidor
+damp/admin.py            admin-sidornas skal + poängtabellen
+damp/devapi.py           lokalt admin-API (skriver till data/)
+damp/build.py            bygger dist/
+damp/history.py          ändringsloggen i data/history/ (varje sparning blir en händelse)
+damp/manual.py, cli.py   import av totaler, recalc-points
+damp/static/admin/       admin-JS (core.js = API, validering, hjälpfunktioner)
+functions/admin/api/     Cloudflare Pages Function: admin-API:t i produktion
 ```
 
 ## Tester
@@ -81,9 +96,3 @@ data/                poäng från innan sajten fanns (för import-points)
 ```bash
 uv run pytest
 ```
-
-## Inför lansering (inte gjort än)
-
-- Sätt `DAMP_ENV=production`, `DAMP_SECRET_KEY=<lång slumpsträng>` och `DAMP_SECURE_COOKIES=1`. Appen vägrar starta i produktion med dev-nyckeln.
-- Kör med gunicorn bakom en HTTPS-proxy (t.ex. Caddy), på en server med beständig disk för `instance/damp.db`, och säkerhetskopiera filen regelbundet.
-- Login-spärren (Flask-Limiter) sparar räknare i minnet, vilket räcker för en process. Använd Redis om ni kör flera workers.

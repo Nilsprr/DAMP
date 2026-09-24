@@ -1,16 +1,10 @@
 [project]
 name = "damp"
 version = "0.1.0"
-description = "DAMP poker league: points, standings and membership tracking"
+description = "DAMP poker league: points and standings, built to a static site"
 requires-python = ">=3.12"
 dependencies = [
     "flask>=3.1",
-    "flask-sqlalchemy>=3.1",
-    "flask-migrate>=4.1",
-    "flask-wtf>=1.2",
-    "flask-limiter>=3.10",
-    "pyotp>=2.9",
-    "segno>=1.6",
     "markdown>=3.7",
     "nh3>=0.2",
 ]

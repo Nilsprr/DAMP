@@ -1,10 +1,8 @@
 """Standings, cumulative point series and per-player stats for one LP."""
 
-from sqlalchemy import select
-from sqlalchemy.orm import selectinload
+from collections import Counter
 
-from .extensions import db
-from .models import ManualPoints, Night, Period, PokerTable, Result
+from .store import Member, Period
 from .util import short_date
 
 
@@ -14,81 +12,59 @@ def _num(x: float) -> int | float:
     return int(x) if x == int(x) else x
 
 
-def _nights(period: Period) -> list[Night]:
-    return list(
-        db.session.scalars(
-            select(Night)
-            .where(Night.period_id == period.id)
-            .order_by(Night.date)
-            .options(selectinload(Night.tables).selectinload(PokerTable.results).selectinload(Result.member))
-        )
-    )
-
-
-def _manual(period: Period) -> list[ManualPoints]:
-    return list(
-        db.session.scalars(
-            select(ManualPoints)
-            .where(ManualPoints.period_id == period.id)
-            .options(selectinload(ManualPoints.member))
-        )
-    )
-
-
 def lp_data(period: Period) -> dict:
     """Everything the viewer needs for one LP, JSON-ready.
 
-    The timeline ("nights") is every date with points: nights with tables plus
-    dates with manual points. players[i].series has len(nights) + 1 values: 0 at
-    the start, then the cumulative total after each date (flat when the player
-    has no points that date). Players are sorted by rank (points, then wins, then
-    average placement). Wins / avg / best / wipes are None for a player without
-    any placements (only manual points).
+    The timeline ("dates") is every date with points: tables plus manual points.
+    players[i].series has len(dates) + 1 values: 0 at the start, then the cumulative
+    total after each date (flat when the player has no points that date). Players are
+    sorted by rank (points, then wins, then average placement). Tables / wins / avg /
+    best / wipes are None for a player without any placements (only manual points).
     """
-    nights = _nights(period)
-    manual = _manual(period)
-    dates = sorted({n.date for n in nights} | {m.date for m in manual})
+    tables = period.tables
+    manual = period.manual_points
+    dates = sorted({t.date for t in tables} | {m.date for m in manual})
     index = {d: i for i, d in enumerate(dates)}
-    notes = {n.date: n.note for n in nights}
+    tables_on = Counter(t.date for t in tables)
     players: dict[int, dict] = {}
     per_date_players: list[set[int]] = [set() for _ in dates]
 
-    def entry(member) -> dict:
+    def entry(member: Member) -> dict:
         p = players.get(member.id)
         if p is None:
             p = players[member.id] = {
                 "id": member.id,
                 "name": member.public_name,
+                "full_name": member.full_name,
                 "per_date": [0.0] * len(dates),
                 "results": [],
             }
         return p
 
-    for night in nights:
-        i = index[night.date]
-        for table in night.tables:
-            size = len(table.results)
-            for r in table.results:
-                p = entry(r.member)
-                p["per_date"][i] += r.points
-                per_date_players[i].add(r.member_id)
-                p["results"].append(
-                    {"night": i, "table": table.table_no, "placement": r.placement, "size": size,
-                     "points": _num(r.points), "wipes": r.wipes, "manual": False}
-                )
+    for table in tables:
+        i = index[table.date]
+        size = len(table.results)
+        for r in table.results:
+            p = entry(r.member)
+            p["per_date"][i] += r.points
+            per_date_players[i].add(r.member_id)
+            p["results"].append(
+                {"date": i, "table": table.number, "placement": r.placement, "size": size,
+                 "points": _num(r.points), "wipes": r.wipes, "manual": False}
+            )
     for mp in manual:
         i = index[mp.date]
         p = entry(mp.member)
         p["per_date"][i] += mp.points
         per_date_players[i].add(mp.member_id)
         p["results"].append(
-            {"night": i, "table": None, "placement": None, "size": None,
+            {"date": i, "table": None, "placement": None, "size": None,
              "points": _num(mp.points), "wipes": None, "manual": True}
         )
 
     rows = []
     for p in players.values():
-        results = sorted(p.pop("results"), key=lambda r: (r["night"], r["manual"]))
+        results = sorted(p.pop("results"), key=lambda r: (r["date"], r["manual"], r["table"] or 0))
         series, total = [0], 0.0
         for pts in p.pop("per_date"):
             total += pts
@@ -98,7 +74,7 @@ def lp_data(period: Period) -> dict:
             p
             | {
                 "points": _num(total),
-                "nights": len({r["night"] for r in results}),
+                "tables": len(placements) if placements else None,
                 "wins": placements.count(1) if placements else None,
                 "avg": round(sum(placements) / len(placements), 2) if placements else None,
                 "best": min(placements) if placements else None,
@@ -123,8 +99,9 @@ def lp_data(period: Period) -> dict:
 
     return {
         "period": {"id": period.id, "label": period.label},
-        "nights": [
-            {"date": d.isoformat(), "label": short_date(d), "note": notes.get(d), "players": len(per_date_players[i])}
+        "tables": len(tables),
+        "dates": [
+            {"date": d.isoformat(), "label": short_date(d), "tables": tables_on[d], "players": len(per_date_players[i])}
             for i, d in enumerate(dates)
         ],
         "players": rows,

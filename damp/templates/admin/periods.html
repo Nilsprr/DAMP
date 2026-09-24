@@ -1,39 +1,4 @@
 {% extends "admin/base_admin.html" %}
+{% set admin_script = "periods.js" %}
 {% block title %}LP · Admin · DAMP{% endblock %}
-{% block admin_content %}
-<section class="card">
-  <div class="card-head"><h2>Läsperioder</h2><a class="btn btn-sm" href="{{ url_for('admin.period_new') }}">+ Nytt LP</a></div>
-  {% if periods %}
-  <div class="table-scroll">
-  <table class="data">
-    <thead><tr><th>LP</th><th>Start</th><th>Slut</th><th class="num">Kvällar</th><th class="num" title="Poäng utan placering">Manuella poäng</th><th></th></tr></thead>
-    <tbody>
-    {% for p in periods %}
-      <tr>
-        <td><strong>{{ p.label }}</strong>{% if p.contains(today()) %} <span class="badge badge-active">Pågår</span>{% endif %}</td>
-        <td>{{ p.starts_on.isoformat() }}</td>
-        <td>{{ p.ends_on.isoformat() }}</td>
-        <td class="num">{{ p.nights|length }}</td>
-        <td class="num"><a href="{{ url_for('admin.manual_points', period_id=p.id) }}">{{ p.manual_points|length }}</a></td>
-        <td class="nowrap num">
-          <a class="btn btn-ghost btn-sm" href="{{ url_for('admin.period_edit', period_id=p.id) }}">Redigera</a>
-          <form class="inline-form" method="post" action="{{ url_for('admin.period_recalc', period_id=p.id) }}" data-confirm="Räkna om alla poäng i {{ p.label }} med nuvarande poängfunktion?">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button class="btn btn-ghost btn-sm" type="submit">Räkna om poäng</button>
-          </form>
-          {% if not p.nights and not p.manual_points %}
-          <form class="inline-form" method="post" action="{{ url_for('admin.period_delete', period_id=p.id) }}" data-confirm="Radera {{ p.label }}?">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button class="btn btn-danger btn-sm" type="submit">Radera</button>
-          </form>
-          {% endif %}
-        </td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-  </div>
-  {% else %}<p class="placeholder">Inga LP ännu. Skapa det första.</p>{% endif %}
-  <p class="muted" style="margin-top:12px">Poängen räknas av <code>points_for()</code> i <code>damp/scoring.py</code>. Efter en ändring där: tryck "Räkna om poäng" för att uppdatera gamla resultat. Manuella poäng (utan placering) påverkas inte.</p>
-</section>
-{% endblock %}
+{% block admin_content %}<div id="page"></div>{% endblock %}

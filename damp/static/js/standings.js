@@ -7,7 +7,7 @@
   const byId = new Map(players.map((p) => [p.id, p]));
   const TOP_N = 4; // leaders drawn in colour; everyone else is a muted context line
   const TOOLTIP_N = 6;
-  const labels = ["Start"].concat(data.nights.map((n) => n.label));
+  const labels = ["Start"].concat(data.dates.map((d) => d.label));
 
   // Leaders: rank <= TOP_N, but never split a tie at the cut (then colour only those above it).
   const cut = players.filter((p) => p.rank <= TOP_N).length > TOP_N ? players[TOP_N].rank : TOP_N + 1;
@@ -159,7 +159,7 @@
     return Math.ceil(Math.min(170, widest + 14));
   }
 
-  // Per night: the ids shown in the tooltip (top N at that point + focus).
+  // Per date: the ids shown in the tooltip (top N at that point + focus).
   const tooltipIds = labels.map((_, i) => {
     const top = players
       .filter((p) => p.series[i] > 0)
@@ -200,7 +200,7 @@
         layout: { padding: (ctx) => ({ right: ctx.chart.width < 560 ? 8 : labelRoom, top: 8 }) },
         interaction: { mode: "index", intersect: false },
         onHover(evt, _els, c) {
-          // Hovering near a specific line (not just the night) highlights it.
+          // Hovering near a specific line (not just the date) highlights it.
           const near = c.getElementsAtEventForMode(evt, "nearest", { intersect: false, axis: "xy" }, false)[0];
           const id = near && Math.abs(near.element.y - evt.y) < 10 ? c.data.datasets[near.datasetIndex].playerId : null;
           if (id !== hoverId && selectedId == null) {
@@ -334,13 +334,13 @@
     el("player-empty").hidden = !!p;
     el("player-detail").hidden = !p;
     if (!p) return;
-    el("pd-name").textContent = p.name;
+    el("pd-name").textContent = p.full_name;
     el("pd-rank").textContent = `${p.rank}`;
     const of = document.createElement("small");
     of.textContent = ` av ${players.length}`;
     el("pd-rank").append(of);
     el("pd-points").textContent = fmtPts(p.points);
-    el("pd-nights").textContent = p.nights;
+    el("pd-tables").textContent = fmtOr(p.tables);
     el("pd-wins").textContent = fmtOr(p.wins);
     el("pd-avg").textContent = fmtOr(p.avg, (v) => v.toFixed(1).replace(".", ","));
     el("pd-wipes").textContent = fmtOr(p.wipes);
@@ -353,7 +353,7 @@
       .forEach((r) => {
         const tr = document.createElement("tr");
         const cells = [
-          data.nights[r.night].label,
+          data.dates[r.date].label,
           fmtOr(r.table),
           r.placement == null ? "–" : `${r.placement} / ${r.size}`,
           (r.points >= 0 ? "+" : "") + fmtPts(r.points),
@@ -370,7 +370,6 @@
 
   function syncUrl() {
     const url = new URL(window.location.href);
-    url.searchParams.set("lp", data.period.id);
     if (selectedId != null) url.searchParams.set("player", selectedId);
     else url.searchParams.delete("player");
     history.replaceState(null, "", url);
@@ -402,14 +401,10 @@
     });
   });
 
-  // ---------- LP select ----------
+  // ---------- LP select (option values are the LP pages' URLs) ----------
 
   const lpSelect = el("lp-select");
-  lpSelect.addEventListener("change", () => {
-    const url = new URL(window.location.href);
-    url.searchParams.set("lp", lpSelect.value);
-    window.location.assign(url);
-  });
+  lpSelect.addEventListener("change", () => window.location.assign(lpSelect.value));
 
   // ---------- search ----------
 
@@ -433,7 +428,7 @@
     const q = norm(input.value.trim());
     list.replaceChildren();
     if (!q) return closeSuggest();
-    matches = players.filter((p) => norm(p.name).includes(q)).slice(0, 8);
+    matches = players.filter((p) => norm(p.name).includes(q) || norm(p.full_name).includes(q)).slice(0, 8);
     if (!matches.length) {
       const li = document.createElement("li");
       li.className = "empty";

@@ -5,3 +5,5 @@ instance/
 .pytest_cache/
 *.db
 .env
+
+dist/

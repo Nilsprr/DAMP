@@ -1,0 +1,40 @@
+{% extends "admin/base_admin.html" %}
+{% set admin_script = "table-editor.js" %}
+{% block title %}Bord · Admin · DAMP{% endblock %}
+{% block admin_content %}
+<section class="card">
+  <div class="card-head">
+    <h2 id="te-title">Nytt bord</h2>
+    <span class="muted">Lägg till spelarna i placeringsordning: 1:an överst.</span>
+  </div>
+  <div class="editor-meta">
+    <div class="field"><label for="te-date">Datum</label><input id="te-date" type="date" required></div>
+    <div class="field"><span class="label">LP · bord</span><p class="lp-value" id="te-where">–</p></div>
+    <div class="field"><label for="te-note">Notering <span class="muted">(valfritt)</span></label><input id="te-note" type="text" maxlength="200" placeholder="t.ex. finalbord"></div>
+  </div>
+  <div class="error-box" id="te-date-hint" hidden></div>
+  <div class="warn-box" id="te-points-warning" hidden></div>
+</section>
+
+<section class="card table-card">
+  <div class="seat-head" aria-hidden="true"><span>#</span><span>Spelare</span><span>Wipes</span><span>Poäng</span><span class="actions-spacer"></span></div>
+  <ol class="seat-list" id="te-seats"></ol>
+  <div class="add-player">
+    <div class="search">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6"/><path d="m13 13 5 5" stroke-linecap="round"/></svg>
+      <input type="search" id="te-input" placeholder="Lägg till: namn eller LTU-id…" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="te-suggest" aria-label="Lägg till spelare">
+      <ul class="suggest" id="te-suggest" role="listbox" hidden></ul>
+    </div>
+    <div class="error-box" id="te-add-error" hidden></div>
+  </div>
+</section>
+
+<div class="card commit-bar">
+  <span class="summary" id="te-summary"></span>
+  <div class="form-actions" style="margin:0">
+    <button class="btn btn-ghost btn-sm" type="button" id="te-clear" hidden>Rensa</button>
+    <button class="btn" type="button" id="te-commit">Spara bordet</button>
+  </div>
+</div>
+<div id="te-errors" class="error-box" hidden role="alert"></div>
+{% endblock %}

@@ -4,39 +4,38 @@
 <div class="page-head">
   <div>
     <h1>Topplista{% if period %} {{ period.label }}{% endif %}</h1>
-    <p>Poäng från tisdagsturneringarna, uppdateras efter varje kväll.</p>
+    <p>Poäng från tisdagsturneringarna, uppdateras efter varje bord.</p>
   </div>
   {% if periods %}
-  <form class="controls" method="get" action="{{ url_for('public.index') }}" role="search">
+  <div class="controls" role="search">
     <label class="sr-only" for="lp-select">Läsperiod</label>
-    <select id="lp-select" name="lp" aria-label="Läsperiod">
-      {% for p in periods %}<option value="{{ p.id }}" {% if period and p.id == period.id %}selected{% endif %}>{{ p.label }}</option>{% endfor %}
+    <select id="lp-select" aria-label="Läsperiod">
+      {% for p in periods %}<option value="{{ url_for('public.index', slug=p.id) }}" {% if period and p.id == period.id %}selected{% endif %}>{{ p.label }}</option>{% endfor %}
     </select>
-    <noscript><button class="btn btn-sm" type="submit">Visa</button></noscript>
     <div class="search">
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6"/><path d="m13 13 5 5" stroke-linecap="round"/></svg>
       <input id="player-search" type="search" placeholder="Sök spelare…" autocomplete="off"
              role="combobox" aria-expanded="false" aria-controls="player-suggest" aria-label="Sök spelare">
       <ul id="player-suggest" class="suggest" role="listbox" hidden></ul>
     </div>
-  </form>
+  </div>
   {% endif %}
 </div>
 
 {% if not period %}
-  <section class="card"><p class="placeholder">Inga läsperioder ännu. Kom tillbaka efter första kvällen!</p></section>
+  <section class="card"><p class="placeholder">Inga läsperioder ännu. Kom tillbaka efter första bordet!</p></section>
 {% else %}
   <section class="card" aria-labelledby="chart-title">
     <div class="card-head">
       <h2 id="chart-title">Poäng över tid</h2>
-      <span class="muted">{{ data.nights|length }} {{ 'kväll' if data.nights|length == 1 else 'kvällar' }} · {{ data.players|length }} spelare</span>
+      <span class="muted">{{ data.tables }} bord · {{ data.players|length }} spelare</span>
     </div>
     <ul class="legend" id="chart-legend" aria-label="Förklaring"></ul>
     <div class="chart-wrap">
-      {% if data.nights %}
-        <canvas id="points-chart" role="img" aria-label="Linjediagram: ackumulerade poäng per spelare och kväll i {{ period.label }}. Samma siffror finns i tabellen nedan."></canvas>
+      {% if data.dates %}
+        <canvas id="points-chart" role="img" aria-label="Linjediagram: ackumulerade poäng per spelare och datum i {{ period.label }}. Samma siffror finns i tabellen nedan."></canvas>
       {% else %}
-        <div class="chart-empty"><p>Inga kvällar spelade i {{ period.label }} än.</p></div>
+        <div class="chart-empty"><p>Inga bord spelade i {{ period.label }} än.</p></div>
       {% endif %}
     </div>
   </section>
@@ -45,7 +44,7 @@
     <section class="card" aria-labelledby="board-title">
       <div class="card-head">
         <h2 id="board-title">Ställning</h2>
-        <span class="muted">Klicka på en spelare</span>
+        <span class="muted">Klicka på en medlem</span>
       </div>
       {% if data.players %}
       <div class="table-scroll">
@@ -53,9 +52,9 @@
           <thead>
             <tr>
               <th scope="col" class="num">#</th>
-              <th scope="col">Spelare</th>
+              <th scope="col">Medlemmar</th>
               <th scope="col" class="num">Poäng</th>
-              <th scope="col" class="num hide-sm" title="Antal spelade kvällar">Kvällar</th>
+              <th scope="col" class="num hide-sm" title="Antal spelade bord">Bord</th>
               <th scope="col" class="num" title="Antal 1:a placeringar">Vinster</th>
               <th scope="col" class="num hide-sm" title="Snittplacering">Snitt</th>
             </tr>
@@ -71,7 +70,7 @@
                 </span>
               </td>
               <td class="num"><strong>{{ p.points|points }}</strong></td>
-              <td class="num hide-sm">{{ p.nights }}</td>
+              <td class="num hide-sm">{{ p.tables if p.tables is not none else '–' }}</td>
               <td class="num">{{ p.wins if p.wins is not none else '–' }}</td>
               <td class="num hide-sm">{{ p.avg|decimal }}</td>
             </tr>
@@ -101,15 +100,15 @@
           <div class="stat-grid">
             <div class="stat"><div class="label">Placering</div><div class="value" id="pd-rank"></div></div>
             <div class="stat"><div class="label">Poäng</div><div class="value" id="pd-points"></div></div>
-            <div class="stat"><div class="label">Spelade kvällar</div><div class="value" id="pd-nights"></div></div>
+            <div class="stat"><div class="label">Spelade bord</div><div class="value" id="pd-tables"></div></div>
             <div class="stat"><div class="label">1:a placeringar</div><div class="value" id="pd-wins"></div></div>
             <div class="stat"><div class="label">Snittplacering</div><div class="value" id="pd-avg"></div></div>
             <div class="stat"><div class="label">Wipes <span class="coming-soon">(kommer snart)</span></div><div class="value" id="pd-wipes"></div></div>
           </div>
-          <p class="muted small" id="pd-manual-note" hidden>Poäng utan placering (t.ex. importerade) räknas i poäng och spelade kvällar, men inte i placeringar, snitt eller wipes.</p>
+          <p class="muted small" id="pd-manual-note" hidden>Poäng utan placering (t.ex. importerade) räknas i poängen, men inte som spelade bord, placeringar, snitt eller wipes.</p>
           <div class="table-scroll">
             <table class="data">
-              <thead><tr><th scope="col">Kväll</th><th scope="col" class="num">Bord</th><th scope="col" class="num">Placering</th><th scope="col" class="num">Poäng</th></tr></thead>
+              <thead><tr><th scope="col">Datum</th><th scope="col" class="num">Bord</th><th scope="col" class="num">Placering</th><th scope="col" class="num">Poäng</th></tr></thead>
               <tbody id="pd-results"></tbody>
             </table>
           </div>

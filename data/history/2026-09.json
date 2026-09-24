@@ -1,0 +1,112 @@
+[
+  {
+    "at": "2026-09-24T10:09:35Z",
+    "by": "nils.salomonsson@hotmail.com",
+    "message": "Medlemslistan importerad: 45 medlemmar med namn, LTU-id och datum",
+    "lps": [],
+    "details": [
+      "Kompletterade med namn, LTU-id och datum:",
+      "Harald → Harald Malmström",
+      "Ludvig → Ludvig Ulander Jonsson",
+      "Ian → Ian Väljemark",
+      "Leo → Leo Calderon",
+      "Munib → Munib Daftani",
+      "Erik → Erik Norrbom",
+      "Jonathan Edlund → Jonatan Edlund",
+      "Liam → Liam Rydén",
+      "Sebastian → Sebastian Mauritzon",
+      "Sarition → Sarithon Vithayasricharoen",
+      "Jonathan Steinbrecher → Jonathan Steinbrecher",
+      "Casper → Casper Kubena",
+      "Joel → Joel Norin",
+      "Adam Askeblad → Adam Askerdal",
+      "Ilia → Ilia Chernov",
+      "Kevin Lagerqvist → Kevin Lagerqvist",
+      "Ture → Ture Bergqvist",
+      "Jonathan Hedström → Jonathan Hedström",
+      "Firat → Firat Bakac",
+      "Nya medlemmar:",
+      "Aladdin Ali",
+      "Carl Nordin",
+      "Jesper Grapne",
+      "Nils Salomonsson",
+      "Karl Grahn",
+      "Diego Esteban",
+      "Nils Kjellberg",
+      "Marseel Marqooz",
+      "Carl Witt",
+      "Noah Olofsson",
+      "Rasmus Junel",
+      "Axel Burenius",
+      "Sixten Sundbom",
+      "Emma Tjärnström",
+      "Victor Oksanen",
+      "Emil Jatko",
+      "Alma Frändestam",
+      "Peter Fischer",
+      "Hugo Sandström",
+      "Isak Bönnestig",
+      "William Lehmann",
+      "Alex Stugell",
+      "Loa Hellsing",
+      "Lucas Forsberg",
+      "Maximilian Roos",
+      "Oleksandra Pozniakova",
+      "Utan match i listan (behåller sina gamla namn tills vidare):",
+      "CJ",
+      "Kjelle",
+      "Sasha",
+      "Slalle",
+      "Eve",
+      "Tales",
+      "Dobbe"
+    ]
+  },
+  {
+    "at": "2026-09-24T10:09:35Z",
+    "by": "nils.salomonsson@hotmail.com",
+    "message": "LP4 25/26 fanns sedan tidigare (importerat från gamla sajten)",
+    "lps": [
+      "lp4-25-26"
+    ],
+    "details": [
+      "2026-03-23 – 2026-06-07",
+      "29 manuella poäng från kalkylarket"
+    ]
+  },
+  {
+    "at": "2026-09-24T10:09:35Z",
+    "by": "nils.salomonsson@hotmail.com",
+    "message": "LP1 26/27 fanns sedan tidigare (importerat från gamla sajten)",
+    "lps": [
+      "lp1-26-27"
+    ],
+    "details": [
+      "2026-08-31 – 2026-11-01",
+      "23 manuella poäng från kalkylarket"
+    ]
+  },
+  {
+    "at": "2026-09-24T10:09:35Z",
+    "by": "nils.salomonsson@hotmail.com",
+    "message": "LP2 26/27 fanns sedan tidigare (importerat från gamla sajten)",
+    "lps": [
+      "lp2-26-27"
+    ],
+    "details": [
+      "2026-11-02 – 2027-01-17"
+    ]
+  },
+  {
+    "at": "2026-09-24T10:40:32Z",
+    "by": "nils.salomonsson@hotmail.com",
+    "message": "Slog ihop Kjelle med Nils Kjellberg",
+    "lps": [
+      "lp1-26-27"
+    ],
+    "details": [
+      "0 bord och 1 manuella poäng flyttades från Kjelle till Nils Kjellberg.",
+      "Visningsnamn: – → Kjelle"
+    ]
+  }
+]

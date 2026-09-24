@@ -1,29 +1,49 @@
-from datetime import date
+import copy
 
 import pytest
-from werkzeug.security import generate_password_hash
 
 from damp import create_app
-from damp.extensions import db
-from damp.models import AdminUser, Member, MembershipPayment, Period
+from damp.store import write_json
+
+MEMBERS = [
+    {"id": 1, "first_name": "Anna", "last_name": "Andersson", "ltu_id": "annand-5", "joined_on": "2025-10-21"},
+    {"id": 2, "first_name": "Bert", "last_name": "Berg"},
+    {"id": 3, "first_name": "Cleo", "last_name": "Carlsson", "display_name": "Cleopatra"},
+    {"id": 4, "first_name": "Dan", "last_name": "Dahl"},
+    {"id": 5, "first_name": "Eva", "last_name": "Ek"},
+]
+PERIODS = [
+    {"start_year": 2025, "lp": 4, "starts_on": "2026-03-23", "ends_on": "2026-06-07"},
+    {"start_year": 2026, "lp": 1, "starts_on": "2026-08-31", "ends_on": "2026-11-01"},
+]
+NEWS = [{"id": 1, "title": "Välkommen", "published_at": "2026-08-30T12:00", "body": "Vi ses **18:30**."}]
 
 
-@pytest.fixture
-def app():
-    app = create_app(
+def seat(member, points, wipes=0):
+    return {"member": member, "wipes": wipes, "points": points}
+
+
+# Two tables on 2026-09-01 (LP1 26/27): Anna, Bert, Cleo (in finishing order), and Dan, Eva.
+TABLE_1 = {"note": "Första bordet", "players": [seat(1, 3), seat(2, 2), seat(3, 1)]}
+TABLE_2 = {"players": [seat(4, 2), seat(5, 1)]}
+
+
+def base_files() -> dict:
+    return copy.deepcopy(
         {
-            "TESTING": True,
-            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
-            "WTF_CSRF_ENABLED": False,
-            "RATELIMIT_ENABLED": False,
-            "SECRET_KEY": "test",
+            "members.json": MEMBERS,
+            "periods.json": PERIODS,
+            "tables/2026-09-01-1.json": TABLE_1,
+            "tables/2026-09-01-2.json": TABLE_2,
+            "manual-points.json": [],
+            "news.json": NEWS,
         }
     )
-    with app.app_context():
-        db.create_all()
-        yield app
-        db.session.remove()
-        db.drop_all()
+
+
+def write_files(data_dir, files: dict):
+    for path, content in files.items():
+        write_json(data_dir / path, content)
 
 
 def simple_points(placement, table_size, wipes=0):
@@ -33,47 +53,27 @@ def simple_points(placement, table_size, wipes=0):
 @pytest.fixture(autouse=True)
 def fixed_scoring(monkeypatch):
     """Mechanics tests use a fixed rule, so editing damp/scoring.py doesn't break them."""
-    monkeypatch.setattr("damp.nights.points_for", simple_points)
-    monkeypatch.setattr("damp.admin.api.points_for", simple_points)
+    monkeypatch.setattr("damp.scoring.points_for", simple_points)
+    monkeypatch.setattr("damp.cli.points_for", simple_points)
+
+
+@pytest.fixture(autouse=True)
+def fixed_author(monkeypatch):
+    monkeypatch.setattr("damp.history.local_author", lambda: "test@example.com")
+
+
+@pytest.fixture
+def data_dir(tmp_path):
+    d = tmp_path / "data"
+    write_files(d, base_files())
+    return d
+
+
+@pytest.fixture
+def app(data_dir):
+    return create_app(data_dir)
 
 
 @pytest.fixture
 def client(app):
     return app.test_client()
-
-
-@pytest.fixture
-def admin(app):
-    user = AdminUser(username="nils", password_hash=generate_password_hash("correct horse battery"))
-    db.session.add(user)
-    db.session.commit()
-    return user
-
-
-@pytest.fixture
-def admin_client(client, admin):
-    with client.session_transaction() as s:
-        s["admin_id"] = admin.id
-    return client
-
-
-@pytest.fixture
-def period(app):
-    p = Period(start_year=2026, lp=1, starts_on=date(2026, 8, 31), ends_on=date(2026, 11, 1))
-    db.session.add(p)
-    db.session.commit()
-    return p
-
-
-def make_member(name, paid_on=date(2026, 8, 1), years=1, ltu_id=None):
-    m = Member(name=name, ltu_id=ltu_id, joined_on=paid_on or date(2026, 1, 1))
-    if paid_on:
-        m.payments.append(MembershipPayment(paid_on=paid_on, years=years))
-    db.session.add(m)
-    db.session.commit()
-    return m
-
-
-@pytest.fixture
-def members(app):
-    return [make_member(n, ltu_id=f"{n.lower()}-1") for n in ["Anna", "Bert", "Cleo", "Dan", "Eva"]]

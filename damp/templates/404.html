@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Sidan finns inte · DAMP{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Sidan finns inte</h1>
+  <p>du lär ju typ ha gått vilse eller nåt</p>
+  <p><a class="btn" href="{{ url_for('public.index') }}">Till topplistan</a></p>
+</section>
+{% endblock %}

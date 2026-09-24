@@ -1,0 +1,338 @@
+[
+  {
+    "id": 1,
+    "first_name": "Harald",
+    "last_name": "Malmström",
+    "ltu_id": "ahaamo-5",
+    "joined_on": "2025-10-21"
+  },
+  {
+    "id": 2,
+    "first_name": "Ludvig",
+    "last_name": "Ulander Jonsson",
+    "joined_on": "2026-02-17"
+  },
+  {
+    "id": 3,
+    "first_name": "Ian",
+    "last_name": "Väljemark",
+    "ltu_id": "ianval-6",
+    "joined_on": "2026-09-01"
+  },
+  {
+    "id": 4,
+    "first_name": "CJ"
+  },
+  {
+    "id": 5,
+    "first_name": "Leo",
+    "last_name": "Calderon",
+    "ltu_id": "leocal-5",
+    "joined_on": "2025-10-21"
+  },
+  {
+    "id": 6,
+    "first_name": "Munib",
+    "last_name": "Daftani",
+    "ltu_id": "mundaf-6",
+    "joined_on": "2026-09-01"
+  },
+  {
+    "id": 7,
+    "first_name": "Erik",
+    "last_name": "Norrbom",
+    "ltu_id": "reknor-6",
+    "joined_on": "2026-08-31"
+  },
+  {
+    "id": 8,
+    "first_name": "Jonatan",
+    "last_name": "Edlund",
+    "ltu_id": "jonedl-6",
+    "joined_on": "2026-08-31"
+  },
+  {
+    "id": 10,
+    "first_name": "Liam",
+    "last_name": "Rydén",
+    "ltu_id": "liaryd-6",
+    "joined_on": "2026-09-01"
+  },
+  {
+    "id": 11,
+    "first_name": "Sebastian",
+    "last_name": "Mauritzon",
+    "ltu_id": "sebmau-6",
+    "joined_on": "2026-09-01"
+  },
+  {
+    "id": 12,
+    "first_name": "Sarithon",
+    "last_name": "Vithayasricharoen",
+    "ltu_id": "sarvit-6",
+    "joined_on": "2026-09-01"
+  },
+  {
+    "id": 13,
+    "first_name": "Sasha"
+  },
+  {
+    "id": 14,
+    "first_name": "Jonathan",
+    "last_name": "Steinbrecher",
+    "ltu_id": "ojaesi-5",
+    "joined_on": "2026-01-20"
+  },
+  {
+    "id": 15,
+    "first_name": "Slalle"
+  },
+  {
+    "id": 16,
+    "first_name": "Casper",
+    "last_name": "Kubena",
+    "ltu_id": "caskub-5",
+    "joined_on": "2025-10-21"
+  },
+  {
+    "id": 17,
+    "first_name": "Joel",
+    "last_name": "Norin",
+    "ltu_id": "jolnor-6",
+    "joined_on": "2026-09-01"
+  },
+  {
+    "id": 18,
+    "first_name": "Adam",
+    "last_name": "Askerdal",
+    "ltu_id": "admask-6",
+    "joined_on": "2026-09-01"
+  },
+  {
+    "id": 19,
+    "first_name": "Ilia",
+    "last_name": "Chernov",
+    "ltu_id": "iliche-6",
+    "joined_on": "2026-09-08"
+  },
+  {
+    "id": 20,
+    "first_name": "Kevin",
+    "last_name": "Lagerqvist",
+    "ltu_id": "kevlag-5",
+    "joined_on": "2025-10-21"
+  },
+  {
+    "id": 21,
+    "first_name": "Ture",
+    "last_name": "Bergqvist",
+    "joined_on": "2026-05-17"
+  },
+  {
+    "id": 22,
+    "first_name": "Jonathan",
+    "last_name": "Hedström",
+    "ltu_id": "jonhey-5",
+    "joined_on": "2025-10-21"
+  },
+  {
+    "id": 23,
+    "first_name": "Firat",
+    "last_name": "Bakac",
+    "ltu_id": "firbak-2",
+    "joined_on": "2026-09-22"
+  },
+  {
+    "id": 24,
+    "first_name": "Eve"
+  },
+  {
+    "id": 25,
+    "first_name": "Tales"
+  },
+  {
+    "id": 26,
+    "first_name": "Dobbe"
+  },
+  {
+    "id": 27,
+    "first_name": "Aladdin",
+    "last_name": "Ali",
+    "ltu_id": "aldalm-5",
+    "joined_on": "2025-10-21"
+  },
+  {
+    "id": 28,
+    "first_name": "Carl",
+    "last_name": "Nordin",
+    "ltu_id": "aconif-4",
+    "joined_on": "2025-10-28"
+  },
+  {
+    "id": 29,
+    "first_name": "Jesper",
+    "last_name": "Grapne",
+    "ltu_id": "jesgra-5",
+    "joined_on": "2025-10-28"
+  },
+  {
+    "id": 30,
+    "first_name": "Nils",
+    "last_name": "Salomonsson",
+    "ltu_id": "nilsal-5",
+    "joined_on": "2025-11-04"
+  },
+  {
+    "id": 31,
+    "first_name": "Karl",
+    "last_name": "Grahn",
+    "ltu_id": "kargah-5",
+    "joined_on": "2025-10-28"
+  },
+  {
+    "id": 32,
+    "first_name": "Diego",
+    "last_name": "Esteban",
+    "ltu_id": "dieest-0",
+    "joined_on": "2025-11-11"
+  },
+  {
+    "id": 33,
+    "first_name": "Nils",
+    "last_name": "Kjellberg",
+    "display_name": "Kjelle",
+    "ltu_id": "nilkje-5",
+    "joined_on": "2025-10-21"
+  },
+  {
+    "id": 34,
+    "first_name": "Marseel",
+    "last_name": "Marqooz",
+    "ltu_id": "ameamo-4",
+    "joined_on": "2025-12-09"
+  },
+  {
+    "id": 35,
+    "first_name": "Carl",
+    "last_name": "Witt",
+    "ltu_id": "carwit-0",
+    "joined_on": "2025-10-21"
+  },
+  {
+    "id": 36,
+    "first_name": "Noah",
+    "last_name": "Olofsson",
+    "ltu_id": "noaolo-5",
+    "joined_on": "2025-10-28"
+  },
+  {
+    "id": 37,
+    "first_name": "Rasmus",
+    "last_name": "Junel",
+    "ltu_id": "rasjun-3",
+    "joined_on": "2025-10-28"
+  },
+  {
+    "id": 38,
+    "first_name": "Axel",
+    "last_name": "Burenius",
+    "ltu_id": "axebur-3",
+    "joined_on": "2025-10-28"
+  },
+  {
+    "id": 39,
+    "first_name": "Sixten",
+    "last_name": "Sundbom",
+    "ltu_id": "sixsun-3",
+    "joined_on": "2025-10-28"
+  },
+  {
+    "id": 40,
+    "first_name": "Emma",
+    "last_name": "Tjärnström",
+    "ltu_id": "memlar-4",
+    "joined_on": "2025-10-28"
+  },
+  {
+    "id": 41,
+    "first_name": "Victor",
+    "last_name": "Oksanen",
+    "ltu_id": "vicoks-5",
+    "joined_on": "2025-11-04"
+  },
+  {
+    "id": 42,
+    "first_name": "Emil",
+    "last_name": "Jatko",
+    "ltu_id": "emijat-4",
+    "joined_on": "2025-11-11"
+  },
+  {
+    "id": 43,
+    "first_name": "Alma",
+    "last_name": "Frändestam",
+    "ltu_id": "almfra-5",
+    "joined_on": "2025-11-18"
+  },
+  {
+    "id": 44,
+    "first_name": "Peter",
+    "last_name": "Fischer",
+    "joined_on": "2026-01-20"
+  },
+  {
+    "id": 45,
+    "first_name": "Hugo",
+    "last_name": "Sandström",
+    "ltu_id": "hugsan-5",
+    "joined_on": "2026-01-20"
+  },
+  {
+    "id": 46,
+    "first_name": "Isak",
+    "last_name": "Bönnestig",
+    "joined_on": "2026-01-31"
+  },
+  {
+    "id": 47,
+    "first_name": "William",
+    "last_name": "Lehmann",
+    "ltu_id": "willeh-3",
+    "joined_on": "2026-02-17"
+  },
+  {
+    "id": 48,
+    "first_name": "Alex",
+    "last_name": "Stugell",
+    "ltu_id": "alestu-4",
+    "joined_on": "2026-02-17"
+  },
+  {
+    "id": 49,
+    "first_name": "Loa",
+    "last_name": "Hellsing",
+    "ltu_id": "loahel-5",
+    "joined_on": "2026-03-03"
+  },
+  {
+    "id": 50,
+    "first_name": "Lucas",
+    "last_name": "Forsberg",
+    "ltu_id": "forluc-3",
+    "joined_on": "2026-03-03"
+  },
+  {
+    "id": 51,
+    "first_name": "Maximilian",
+    "last_name": "Roos",
+    "ltu_id": "maxroo-4",
+    "joined_on": "2026-03-03"
+  },
+  {
+    "id": 52,
+    "first_name": "Oleksandra",
+    "last_name": "Pozniakova",
+    "ltu_id": "olepoz-5",
+    "joined_on": "2026-09-01"
+  }
+]

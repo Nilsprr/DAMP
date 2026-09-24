@@ -1,10 +1,19 @@
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
-from flask import current_app
+from flask import current_app, g
 
 WEEKDAYS_SV = ["mån", "tis", "ons", "tor", "fre", "lör", "sön"]
 MONTHS_SV = ["jan", "feb", "mar", "apr", "maj", "jun", "jul", "aug", "sep", "okt", "nov", "dec"]
+
+
+def get_store():
+    """The league data for this request, loaded fresh from the data dir (it's small)."""
+    if "store" not in g:
+        from .store import load
+
+        g.store = load(current_app.config["DATA_DIR"])
+    return g.store
 
 
 def now() -> datetime:
@@ -13,18 +22,6 @@ def now() -> datetime:
 
 def today() -> date:
     return now().date()
-
-
-def latest_tuesday(on: date) -> date:
-    """The most recent Tuesday on or before `on`."""
-    return on - timedelta(days=(on.weekday() - 1) % 7)
-
-
-def add_years(d: date, years: int) -> date:
-    try:
-        return d.replace(year=d.year + years)
-    except ValueError:  # 29 Feb -> 28 Feb
-        return d.replace(year=d.year + years, day=28)
 
 
 def parse_date(value: str | None) -> date | None:

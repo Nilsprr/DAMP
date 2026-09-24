@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Fel i datan · DAMP{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Datan i data/ är ogiltig</h1>
+  <p>Rätta filerna nedan. Så länge felen finns kvar vägrar bygget att publicera sidan.</p>
+  <div class="error-box"><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>
+</section>
+{% endblock %}
