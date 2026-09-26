@@ -49,14 +49,13 @@ start(async (data) => {
       h(
         "section",
         { class: "card" },
-        h("h2", {}, "Så funkar det"),
+        h("h2", {}, "Det är inte lätt när det är svårt"),
         h(
           "div",
           { class: "prose" },
-          h("p", {}, "Fyll i ett bord i taget när det är klart: spelarna i placeringsordning, 1:an överst. Poängen räknas ut direkt."),
-          h("p", {}, data.user.dev ? "Lokalt skrivs ändringarna direkt till data/." : "Allt du sparar blir en ändring i DAMP:s GitHub-repo, och den publika sidan uppdateras ungefär en minut senare."),
-          h("p", {}, "Alla ändringar loggas under ", h("a", { href: "/admin/historik/" }, "Historik"), ", med vem som gjorde dem och när."),
-          h("p", {}, h("a", { href: "/" }, "Till den publika topplistan →"))
+          h("p", {}, "Lägg till ett bord 1:an överst osv"),
+          h("p", {}, data.user.dev ? "Lokalt skrivs ändringarna direkt till data/." : "Ändringar pushas till DAMP repot och live sidan updateras typ ganska snart"),
+          h("p", {}, "Alla ändringar loggas under ", h("a", { href: "/admin/historik/" }, "Historik"), ", med vem som gjorde dem och när. Så att ordförande inte får för sig nåt")
         )
       )
     )

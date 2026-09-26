@@ -219,7 +219,7 @@ export async function history() {
 }
 
 export function savedNote(data) {
-  return data.user.dev ? "Sparat i data/." : "Sparat. Den publika sidan uppdateras om ungefär en minut.";
+  return data.user.dev ? "Sparat i data/." : "Sparat. live sidan lär ju updateras om en minut eller nåt";
 }
 
 // ---------- points (scoring.points_for, as a table built from Python) ----------
