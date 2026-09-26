@@ -78,7 +78,6 @@
         </table>
       </div>
       {% if data.players|selectattr('has_manual')|list %}
-        <p class="muted small table-foot">– = placering saknas (poäng utan placering, t.ex. importerade).</p>
       {% endif %}
       {% else %}
         <p class="placeholder">Ingen har tagit poäng i {{ period.label }} än.</p>
