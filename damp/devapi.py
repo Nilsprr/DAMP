@@ -8,7 +8,7 @@ functions/admin/api/[[path]].js:
     POST /admin/api/save     {base, message, lps, details, changes: {path: json | null}} -> {version, rebased}
                              409 {error: "conflict", paths} if a changed file was modified since `base`
                              The change is logged in data/history/ (see damp/history.py).
-    GET  /admin/api/history  -> {events: [...newest first]}
+    GET  /admin/api/history  -> {events: [...newest first], commits: [...made outside the admin, newest first]}
 
 Unlike production, a save is also checked with store.from_files (422 with the
 errors), so data bugs show up here instead of as a failed build.
@@ -109,4 +109,5 @@ def save():
 
 @bp.get("/history")
 def history_events():
-    return jsonify(events=history.read_all(current_app.config["DATA_DIR"]))
+    data_dir = current_app.config["DATA_DIR"]
+    return jsonify(events=history.read_all(data_dir), commits=history.own_commits(data_dir))

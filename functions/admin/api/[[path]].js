@@ -1,8 +1,9 @@
 // The admin API in production: a Cloudflare Pages Function at /admin/api/*, behind
 // Cloudflare Access. It reads data/ from the GitHub repo and saves admin changes as
 // commits, which trigger a rebuild of the site. Every save also appends an event to the
-// change log in data/history/ (format in damp/history.py) in the same commit. Locally,
-// damp/devapi.py implements the same contract (see the top of damp/static/admin/core.js).
+// change log in data/history/ (format in damp/history.py) in the same commit; the history
+// page gets the log plus the commits made outside the admin. Locally, damp/devapi.py
+// implements the same contract (see the top of damp/static/admin/core.js).
 //
 // Settings (Pages → Settings → Variables and Secrets; see docs/cloudflare.md):
 //   ACCESS_TEAM_DOMAIN   e.g. damp.cloudflareaccess.com
@@ -18,6 +19,11 @@ const DATA_PATH = /^(members|periods|manual-points|news)\.json$|^tables\/\d{4}-\
 const LP_ID = /^lp[1-4]-\d{2}-\d{2}$/;
 const MAX_BODY = 1_000_000;
 const UA = "damp-admin";
+// Starts the last line of every commit the admin makes; the same as ADMIN_TRAILER in damp/history.py.
+const ADMIN_TRAILER = "Via DAMP-admin av ";
+// The history page's commits come 100 per GraphQL call, and every call counts against
+// the function's subrequest limit (50 on the free plan).
+const MAX_COMMIT_PAGES = 10;
 
 export async function onRequest({ request, env, params }) {
   const path = [].concat(params.path || []).join("/");
@@ -238,11 +244,23 @@ const DATA_QUERY = `query($owner: String!, $name: String!, $top: String!, $table
     tables: object(expression: $tables) { ${ENTRIES} }
   }
 }`;
-const DIR_QUERY = `query($owner: String!, $name: String!, $expr: String!) {
-  repository(owner: $owner, name: $name) { object(expression: $expr) { ${ENTRIES} } }
-}`;
 const BLOB_QUERY = `query($owner: String!, $name: String!, $expr: String!) {
   repository(owner: $owner, name: $name) { object(expression: $expr) { ... on Blob { text isTruncated } } }
+}`;
+const COMMIT_PAGE = `... on Commit {
+  history(first: 100, after: $after) {
+    pageInfo { hasNextPage endCursor }
+    nodes { oid authoredDate message author { email name } parents(first: 2) { totalCount } }
+  }
+}`;
+const HISTORY_QUERY = `query($owner: String!, $name: String!, $log: String!, $head: String!, $after: String) {
+  repository(owner: $owner, name: $name) {
+    log: object(expression: $log) { ${ENTRIES} }
+    head: object(expression: $head) { ${COMMIT_PAGE} }
+  }
+}`;
+const COMMITS_QUERY = `query($owner: String!, $name: String!, $head: String!, $after: String) {
+  repository(owner: $owner, name: $name) { head: object(expression: $head) { ${COMMIT_PAGE} } }
 }`;
 
 function parseBlob(path, blob) {
@@ -267,26 +285,47 @@ async function getData(env, user) {
   return { version, files, user };
 }
 
-/** The whole change log, newest first. */
+/** The whole change log and the commits made outside the admin, both newest first. */
 async function getHistory(env) {
   const head = await headSha(env);
-  const data = await graphql(env, DIR_QUERY, { expr: `${head}:data/history` });
+  const data = await graphql(env, HISTORY_QUERY, { log: `${head}:data/history`, head });
   const events = [];
-  for (const e of (data.repository.object && data.repository.object.entries) || []) {
+  for (const e of (data.repository.log && data.repository.log.entries) || []) {
     if (e.type === "blob" && /^\d{4}-\d{2}\.json$/.test(e.name)) events.push(...parseBlob(`history/${e.name}`, e.object));
   }
   // Newest first; the sort is stable, so reversing first puts the last appended first within a second.
   events.reverse().sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0));
-  return { events };
+  return { events, commits: await ownCommits(env, head, data.repository.head.history) };
+}
+
+/**
+ * The branch's commits that weren't made through the admin, newest first, shaped like events
+ * plus `sha`: the subject is the message and the body's lines are the details. Admin commits
+ * end with ADMIN_TRAILER and are in the log already; merges are left out. The same rules as
+ * own_commits in damp/history.py.
+ */
+async function ownCommits(env, head, page) {
+  const commits = [];
+  for (let pages = 1; ; pages++) {
+    for (const c of page.nodes) {
+      const lines = c.message.trim().split("\n");
+      if (c.parents.totalCount > 1 || lines.some((line) => line.startsWith(ADMIN_TRAILER))) continue;
+      const subject = lines[0].trim() ? lines[0] : "(inget meddelande)";
+      const body = lines.slice(1).filter((line) => line.trim()).slice(0, 100);
+      commits.push({ sha: c.oid, ...makeEvent({ message: subject, details: body }, c.author.email || c.author.name, c.authoredDate) });
+    }
+    if (!page.pageInfo.hasNextPage || pages >= MAX_COMMIT_PAGES) return commits;
+    page = (await graphql(env, COMMITS_QUERY, { head, after: page.pageInfo.endCursor })).repository.head.history;
+  }
 }
 
 /** The change log event for a save; the same rules as make_event in damp/history.py. */
-function makeEvent({ message, lps = [], details = [] }, email) {
+function makeEvent({ message, lps = [], details = [] }, email, at = new Date()) {
   if (typeof message !== "string" || !message.trim()) throw new HttpError(400, "Händelsen saknar beskrivning.");
   if (!Array.isArray(lps) || lps.length > 10 || !lps.every((lp) => typeof lp === "string" && LP_ID.test(lp))) throw new HttpError(400, "Ogiltiga LP i händelsen.");
   if (!Array.isArray(details) || details.length > 100 || !details.every((d) => typeof d === "string")) throw new HttpError(400, "Ogiltiga detaljer i händelsen.");
   const clean = (text, max) => text.replace(/\s+/g, " ").trim().slice(0, max);
-  const event = { at: new Date().toISOString().replace(/\.\d{3}Z$/, "Z"), by: email, message: clean(message, 200), lps: [...new Set(lps)].sort() };
+  const event = { at: new Date(at).toISOString().replace(/\.\d{3}Z$/, "Z"), by: email, message: clean(message, 200), lps: [...new Set(lps)].sort() };
   if (details.length) event.details = details.map((d) => clean(d, 300));
   return event;
 }
@@ -325,7 +364,7 @@ async function postSave(request, env, user) {
 
   const event = makeEvent(body, user.email);
   const historyPath = `history/${event.at.slice(0, 7)}.json`;
-  const commitMessage = [event.message, "", ...(event.details || []).slice(0, 30), ...(event.details ? [""] : []), `Via DAMP-admin av ${user.email}`].join("\n");
+  const commitMessage = [event.message, "", ...(event.details || []).slice(0, 30), ...(event.details ? [""] : []), `${ADMIN_TRAILER}${user.email}`].join("\n");
   const tree = paths.map((p) =>
     changes[p] === null
       ? { path: `data/${p}`, mode: "100644", type: "blob", sha: null }

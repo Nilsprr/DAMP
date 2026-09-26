@@ -12,7 +12,11 @@ history page filter on an LP. The server appends events (the Cloudflare function
 production, devapi.py locally), so admins can't edit or remove them, and `by` is the
 logged-in address. The site build ignores these files.
 
-The same rules for an incoming event are in functions/admin/api/[[path]].js.
+The history page also lists the commits made outside the admin (own_commits), read
+straight from git, so those need no events.
+
+The same rules for an incoming event, and for which commits to list, are in
+functions/admin/api/[[path]].js.
 """
 
 import json
@@ -28,6 +32,7 @@ LP_ID = re.compile(r"^lp[1-4]-\d{2}-\d{2}$")
 MAX_MESSAGE = 200
 MAX_DETAILS = 100
 MAX_DETAIL = 300
+ADMIN_TRAILER = "Via DAMP-admin av "  # starts the last line of every commit the admin makes
 
 
 def make_event(message, lps=(), details=(), *, by: str, at: datetime | None = None) -> dict:
@@ -70,6 +75,32 @@ def read_all(data_dir: Path) -> list[dict]:
     for path in sorted((Path(data_dir) / HISTORY_DIR).glob("*.json")):
         events.extend(json.loads(path.read_text(encoding="utf-8")))
     return sorted(reversed(events), key=lambda e: e["at"], reverse=True)
+
+
+def own_commits(repo_dir: Path) -> list[dict]:
+    """The branch's commits that weren't made through the admin, newest first, shaped like
+    events plus `sha`: the subject is the message and the body's lines are the details.
+
+    Admin commits end with ADMIN_TRAILER and are in the log already; merges are left out.
+    Empty outside a git repository.
+    """
+    try:
+        out = subprocess.run(
+            ["git", "-C", str(repo_dir), "log", "--no-merges", "-z", "--format=%H%x1f%aI%x1f%ae%x1f%an%x1f%B"],
+            capture_output=True, encoding="utf-8", errors="replace", timeout=10, check=True,
+        ).stdout
+    except (OSError, subprocess.SubprocessError):
+        return []
+    commits = []
+    for record in filter(None, out.split("\0")):
+        sha, at, email, name, message = record.split("\x1f", 4)
+        lines = message.strip().splitlines()
+        if any(line.startswith(ADMIN_TRAILER) for line in lines):
+            continue
+        subject = lines[0] if lines and lines[0].strip() else "(inget meddelande)"
+        body = [line for line in lines[1:] if line.strip()][:MAX_DETAILS]
+        commits.append({"sha": sha, **make_event(subject, details=body, by=email or name, at=datetime.fromisoformat(at))})
+    return commits
 
 
 def local_author() -> str:

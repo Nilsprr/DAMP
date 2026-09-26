@@ -57,6 +57,8 @@ Redigerar du ett gammalt bord efter att funktionen har ändrats, varnar editorn 
 
 **Varje ändring loggas**: bord, medlemmar, LP, manuella poäng och nyheter. Loggen innehåller vem, när och vad (för bord hela resultatet, för ändringar före → efter). Den sparas i `data/history/ÅÅÅÅ-MM.json` i samma commit som ändringen. Servern skriver loggen, så admins kan inte ändra eller ta bort händelser. Varje händelse vet vilka LP den rör, så historiken i admin kan filtreras per LP, inklusive när LP:t skapades. Även `import-points` och `recalc-points` loggar.
 
+Historiken i admin visar också **alla commits som inte gjorts via admin**, till exempel kodändringar, med sina commit-meddelanden. De läses direkt från git (i produktion via GitHub, bland de senaste 1000 commitarna), så de behöver inga egna händelser. Admins commits syns bara som sina händelser, och merge-commits visas inte. Commits syns bara under "Alla händelser", inte när man filtrerar på ett LP.
+
 ## Manuella poäng
 
 Poäng med datum men utan placering, till exempel totaler från ett kalkylark. De räknas i topplistan och grafen, men inte som spelade bord, vinster, snitt eller wipes. Enstaka poster läggs in och ändras under Admin → Manuella poäng. Många på en gång (en fil med `namn poäng`-rader) importeras från kommandoraden:

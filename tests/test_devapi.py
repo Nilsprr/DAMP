@@ -6,7 +6,7 @@ import pytest
 
 from damp import history
 
-from .conftest import seat
+from .conftest import git, seat
 
 NEW_TABLE = {"players": [seat(1, 2), seat(2, 1)]}
 
@@ -48,6 +48,15 @@ def test_every_save_is_logged(client, data_dir):
     assert event["by"] == "test@example.com" and event["at"].endswith("Z")
     assert (data_dir / "history" / f"{event['at'][:7]}.json").exists()
     assert "history" not in json.dumps(sorted(get_data(client)["files"]))  # the log isn't part of the data
+
+
+def test_history_lists_commits_made_outside_the_admin(client, data_dir):
+    git(data_dir, "init", "-q")
+    git(data_dir, "commit", "-q", "--allow-empty", "-m", "Ny om-sida")
+    git(data_dir, "commit", "-q", "--allow-empty", "-m", "Raderad nyhet: X\n\nVia DAMP-admin av a@b.se", date="2026-09-26T18:54:00+02:00")
+    body = client.get("/admin/api/history").get_json()
+    assert [c["message"] for c in body["commits"]] == ["Ny om-sida"]
+    assert body["events"] == []
 
 
 def test_history_is_newest_first(client):

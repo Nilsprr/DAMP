@@ -1286,6 +1286,12 @@ table.data tr.detail-row > td {
 table.data.history td {
   vertical-align: top;
 }
+.commit-sha {
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-right: 6px;
+}
 [hidden] {
   display: none !important; /* .btn etc. set display, which would otherwise override the hidden attribute */
 }

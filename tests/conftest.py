@@ -1,4 +1,6 @@
 import copy
+import os
+import subprocess
 
 import pytest
 
@@ -44,6 +46,13 @@ def base_files() -> dict:
 def write_files(data_dir, files: dict):
     for path, content in files.items():
         write_json(data_dir / path, content)
+
+
+def git(repo, *args, date="2026-09-26T18:53:12+02:00"):
+    """Run git in `repo` as a fixed author at a fixed time, whatever the global git config says."""
+    env = {**os.environ, "GIT_AUTHOR_DATE": date, "GIT_COMMITTER_DATE": date}
+    cmd = ["git", "-C", str(repo), "-c", "user.name=Nils", "-c", "user.email=nils@example.com", "-c", "commit.gpgsign=false", *args]
+    subprocess.run(cmd, check=True, capture_output=True, env=env)
 
 
 def simple_points(placement, table_size, wipes=0):

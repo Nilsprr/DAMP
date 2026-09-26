@@ -9,7 +9,8 @@
 //   POST save     {base, message, lps, details, changes: {path: content | null}} -> {version, rebased}
 //                 409 when a changed file was modified by someone else since `base`.
 //                 The server logs {message, lps, details} in the history (damp/history.py).
-//   GET  history  -> {events: [{at, by, message, lps, details?}]}, newest first
+//   GET  history  -> {events: [{at, by, message, lps, details?}], commits: [{sha, at, by, message, lps, details?}]}
+//                 both newest first; commits are the branch's commits made outside the admin
 
 export class UserError extends Error {}
 
@@ -215,7 +216,7 @@ export async function save(mutate, data = null) {
 export async function history() {
   const res = await call("history");
   if (!res.ok) throw new UserError((res.body && res.body.error) || `Kunde inte läsa historiken (fel ${res.status}).`);
-  return res.body.events || [];
+  return { events: res.body.events || [], commits: res.body.commits || [] };
 }
 
 export function savedNote(data) {
