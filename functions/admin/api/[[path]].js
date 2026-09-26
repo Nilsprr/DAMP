@@ -81,9 +81,14 @@ function cookie(request, name) {
   return m ? m[1] : null;
 }
 
+// Tolerate what easily sneaks into pasted settings: spaces, "https://", a trailing slash.
+const teamDomain = (env) => String(env.ACCESS_TEAM_DOMAIN || "").trim().replace(/^https?:\/\//i, "").replace(/\/+$/, "");
+const accessAud = (env) => String(env.ACCESS_AUD || "").trim();
+const short = (s) => (String(s).length > 12 ? String(s).slice(0, 8) + "…" : String(s));
+
 /** Verify the Access JWT (signature, audience, issuer, expiry) and the email allowlist. */
 async function authenticate(request, env) {
-  if (!env.ACCESS_TEAM_DOMAIN || !env.ACCESS_AUD || !env.ADMIN_EMAILS) {
+  if (!teamDomain(env) || !accessAud(env) || !env.ADMIN_EMAILS) {
     throw new HttpError(500, "Admin är inte färdigkonfigurerad (Cloudflare Access-inställningar saknas).");
   }
   const token = request.headers.get("Cf-Access-Jwt-Assertion") || cookie(request, "CF_Authorization");
@@ -99,21 +104,27 @@ async function authenticate(request, env) {
   }
   if (header.alg !== "RS256") throw new HttpError(401, "Ogiltig inloggning.");
 
-  const team = env.ACCESS_TEAM_DOMAIN;
+  const team = teamDomain(env);
+  const aud = accessAud(env);
   let jwk = (await accessKeys(team)).find((k) => k.kid === header.kid);
   if (!jwk) jwk = (await accessKeys(team, true)).find((k) => k.kid === header.kid); // keys rotate
-  if (!jwk) throw new HttpError(401, "Ogiltig inloggning.");
+  if (!jwk) throw new HttpError(401, `Ogiltig inloggning (nyckeln finns inte hos ${team}; stämmer ACCESS_TEAM_DOMAIN?).`);
   const key = await crypto.subtle.importKey("jwk", jwk, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["verify"]);
   const valid = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, b64urlDecode(parts[2]), new TextEncoder().encode(`${parts[0]}.${parts[1]}`));
+  if (!valid) throw new HttpError(401, "Ogiltig inloggning (signaturen stämmer inte).");
+
+  // A token from the wrong Access app or team is a settings problem, not an expired session:
+  // answer 500 so the admin shows the message instead of "logged out".
+  const auds = [].concat(payload.aud);
+  if (!auds.includes(aud)) {
+    throw new HttpError(500, `Admin är felkonfigurerad: inloggningen gäller Access-appen ${auds.map(short).join(", ")}, men ACCESS_AUD är ${short(aud)}.`);
+  }
+  if (payload.iss !== `https://${team}`) {
+    throw new HttpError(500, `Admin är felkonfigurerad: inloggningen kommer från ${payload.iss}, men ACCESS_TEAM_DOMAIN är ${team}.`);
+  }
   const now = Date.now() / 1000;
-  if (
-    !valid ||
-    ![].concat(payload.aud).includes(env.ACCESS_AUD) ||
-    payload.iss !== `https://${team}` ||
-    !(payload.exp > now) ||
-    (payload.nbf && payload.nbf > now + 60)
-  ) {
-    throw new HttpError(401, "Ogiltig eller utgången inloggning.");
+  if (!(payload.exp > now) || (payload.nbf && payload.nbf > now + 60)) {
+    throw new HttpError(401, "Inloggningen har gått ut.");
   }
 
   const email = String(payload.email || "").toLowerCase();
