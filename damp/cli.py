@@ -10,7 +10,7 @@ from datetime import date
 import click
 
 from . import history
-from .manual import PointsImportError, find_period, import_totals, parse_totals, tuesdays
+from .manual import PointsImportError, find_members, find_period, import_totals, member_name, parse_totals, tuesdays
 from .scoring import points_for
 from .store import TABLE_FILE, DataError, from_files, load, read_files, write_json
 from .util import fmt_points, parse_date, today
@@ -26,6 +26,55 @@ def recalc_table(table: dict) -> int:
             seat["points"] = new
             changed += 1
     return changed
+
+
+MEMBER_KEYS = ["id", "first_name", "last_name", "display_name", "ltu_id", "joined_on"]
+
+
+class MergeError(ValueError):
+    pass
+
+
+def merge_member_files(files: dict, source: dict, target: dict, display_name: str | None) -> tuple[dict, list[str], list[str]]:
+    """Move `source`'s table results and manual points to `target` and drop `source`.
+
+    `files` are the parsed data files (not changed). Returns (changed files, dates moved,
+    history details). The target keeps its own names; `display_name` replaces its display
+    name, and fields it lacks (last name, LTU-id, joined) are taken from the source.
+    """
+    changed: dict = {}
+    dates: list[str] = []
+    clashes, tables = [], 0
+    for path, table in files.items():
+        m = TABLE_FILE.match(path)
+        if not m or not any(s["member"] == source["id"] for s in table["players"]):
+            continue
+        if any(s["member"] == target["id"] for s in table["players"]):
+            clashes.append(f"{m[1]}, bord {m[2]}")
+            continue
+        changed[path] = {**table, "players": [{**s, "member": target["id"]} if s["member"] == source["id"] else s for s in table["players"]]}
+        dates.append(m[1])
+        tables += 1
+    if clashes:
+        raise MergeError("Båda är med vid samma bord: " + ", ".join(clashes))
+    manual = [dict(e) for e in files.get("manual-points.json", [])]
+    points = 0
+    for e in manual:
+        if e["member"] == source["id"]:
+            e["member"] = target["id"]
+            dates.append(e["date"])
+            points += 1
+    if points:
+        changed["manual-points.json"] = manual
+    merged = {**target, "display_name": display_name}
+    for key in ("last_name", "ltu_id", "joined_on"):
+        merged[key] = merged.get(key) or source.get(key)
+    merged = {k: merged[k] for k in MEMBER_KEYS if merged.get(k)}
+    changed["members.json"] = [merged if m["id"] == target["id"] else m for m in files["members.json"] if m["id"] != source["id"]]
+    details = [f"{tables} bord och {points} manuella poäng flyttades från {member_name(source)} till {member_name(target)}."]
+    labels = {"last_name": "Efternamn", "display_name": "Visningsnamn", "ltu_id": "LTU-id", "joined_on": "Medlem sedan"}
+    details += [f"{label}: {target.get(k) or '–'} → {merged.get(k) or '–'}" for k, label in labels.items() if target.get(k) != merged.get(k)]
+    return changed, dates, details
 
 
 def register_cli(app):
@@ -66,6 +115,44 @@ def register_cli(app):
             log(f"Räknade om poäng i {where}: {changed} resultat på {len(touched)} bord ändrades",
                 lps, [f"{d}, bord {n}" for d, n in sorted(touched)])
         click.echo(f"{changed} resultat ändrades på {len(touched)} bord.")
+
+    @app.cli.command("merge-members")
+    @click.argument("source")
+    @click.argument("target")
+    @click.option("--display-name", "display", help="Visningsnamn efteråt (standard: SOURCE:s smeknamn, t.ex. Slalle).")
+    def merge_members_cmd(source, target, display):
+        """Move SOURCE's tables and manual points to TARGET and remove SOURCE.
+
+        For a nickname from the old spreadsheet that turns out to be a listed member:
+        merge-members Slalle "Nils Salomonsson" gives Nils "Slalle" Salomonsson.
+        """
+        store = store_or_fail()
+        files = read_files(data_dir())
+        members = files.get("members.json", [])
+
+        def one(name, candidates):
+            hits = find_members(name, candidates)
+            if len(hits) != 1:
+                raise click.ClickException(f"'{name}' matchar {len(hits)} medlemmar, inte en.")
+            return hits[0]
+
+        src = one(source, members)
+        dst = one(target, [m for m in members if m["id"] != src["id"]])
+        nickname = src.get("display_name") or (src["first_name"] if not src.get("last_name") else None)
+        display = " ".join(display.split()) if display is not None else (nickname or dst.get("display_name"))
+        try:
+            changed, dates, details = merge_member_files(files, src, dst, display or None)
+            from_files({**files, **changed})
+        except MergeError as e:
+            raise click.ClickException(str(e))
+        except DataError as e:
+            raise click.ClickException("Sammanslagningen skulle ge ogiltig data:\n" + "\n".join(e.errors))
+        for path, content in changed.items():
+            write_json(data_dir() / path, content)
+        lps = {store.period_for(date.fromisoformat(d)).id for d in dates}
+        message = f"Slog ihop {member_name(src)} med {member_name(dst)}"
+        log(message, lps, details)
+        click.echo(message + ". " + " ".join(details))
 
     @app.cli.command("import-points")
     @click.argument("file", type=click.File(encoding="utf-8"))

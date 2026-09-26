@@ -1,6 +1,6 @@
 // Admin: members. Add, edit (name, LTU-id, display name, member since), delete members without points.
 import { $, MEMBERS, UserError, busy, fill, fmtPts, h, memberName, memberUsage, norm, notify, publicNames, save, savedNote, shortDate, start } from "./core.js";
-import { memberDialog, mergeDialog } from "./member-form.js";
+import { memberDialog } from "./member-form.js";
 
 start(async (initial) => {
   let data = initial;
@@ -12,14 +12,6 @@ start(async (initial) => {
     if (!result) return;
     data = result.data;
     notify(`${memberName(result.member)} är ${member ? "sparad" : "tillagd"}. ${savedNote(data)}`);
-    renderRows();
-  }
-
-  async function merge(member) {
-    const result = await mergeDialog(data, member);
-    if (!result) return;
-    data = result.data;
-    notify(`${memberName(member)} är ihopslagen. ${savedNote(data)}`);
     renderRows();
   }
 
@@ -45,7 +37,6 @@ start(async (initial) => {
   }
 
   const tbody = h("tbody");
-  const names = h("datalist", { id: "merge-members" });
   const count = h("span", { class: "muted" });
   const fmtDate = (iso) => (iso ? `${shortDate(iso)} ${iso.slice(0, 4)}` : "–");
 
@@ -55,7 +46,6 @@ start(async (initial) => {
     const q = norm(query);
     const shown = data.members.filter((m) => !q || [memberName(m), m.display_name, m.ltu_id].some((v) => v && norm(v).includes(q)));
     count.textContent = `(${data.members.length})`;
-    fill(names, data.members.map((m) => h("option", { value: memberName(m) })));
     fill(
       tbody,
       ...shown.map((m) => {
@@ -63,12 +53,7 @@ start(async (initial) => {
         return h(
           "tr",
           {},
-          h(
-            "td",
-            {},
-            memberName(m),
-            m.last_name ? null : [" ", h("span", { class: "badge badge-soon", title: "Efternamn saknas: redigera, eller slå ihop med rätt medlem om det är ett smeknamn" }, "Ofullständig")]
-          ),
+          h("td", {}, memberName(m), m.last_name ? null : [" ", h("span", { class: "badge badge-soon", title: "Efternamn saknas" }, "Ofullständig")]),
           h("td", { class: "nowrap muted" }, m.ltu_id || "–"),
           h("td", { class: "nowrap" }, shownAs.get(m.id)),
           h("td", { class: "nowrap hide-sm" }, fmtDate(m.joined_on)),
@@ -78,7 +63,6 @@ start(async (initial) => {
             "td",
             { class: "num nowrap" },
             h("button", { class: "btn btn-ghost btn-sm", type: "button", onclick: () => edit(m) }, "Redigera"),
-            h("button", { class: "btn btn-ghost btn-sm", type: "button", title: "Flytta alla poäng till en annan medlem och ta bort den här", onclick: () => merge(m) }, "Slå ihop"),
             u ? null : h("button", { class: "btn btn-danger btn-sm", type: "button", onclick: (e) => remove(m, e.currentTarget) }, "Radera")
           )
         );
@@ -88,7 +72,6 @@ start(async (initial) => {
   }
 
   page.replaceChildren(
-    names,
     h(
       "section",
       { class: "card" },
@@ -133,7 +116,7 @@ start(async (initial) => {
       h(
         "p",
         { class: "muted small table-foot" },
-        "Topplistan visar visningsnamnet, annars förnamnet (med efternamnets initial om två har samma). Medlemmar med poäng kan inte raderas, men kan slås ihop med en annan medlem (t.ex. när ett smeknamn visar sig vara någon i listan). Nya medlemmar kan också läggas till direkt när du fyller i ett bord."
+        "Topplistan visar visningsnamnet, annars förnamnet (med efternamnets initial om två har samma). Medlemmar med poäng kan inte raderas. Nya medlemmar kan också läggas till direkt när du fyller i ett bord."
       )
     )
   );

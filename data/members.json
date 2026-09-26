@@ -73,19 +73,11 @@
     "joined_on": "2026-09-01"
   },
   {
-    "id": 13,
-    "first_name": "Sasha"
-  },
-  {
     "id": 14,
     "first_name": "Jonathan",
     "last_name": "Steinbrecher",
     "ltu_id": "ojaesi-5",
     "joined_on": "2026-01-20"
-  },
-  {
-    "id": 15,
-    "first_name": "Slalle"
   },
   {
     "id": 16,
@@ -144,15 +136,22 @@
   },
   {
     "id": 24,
-    "first_name": "Eve"
+    "first_name": "Eve",
+    "last_name": "Evesson",
+    "display_name": "Eve"
   },
   {
     "id": 25,
-    "first_name": "Tales"
+    "first_name": "Tales",
+    "last_name": "Talesson",
+    "display_name": "Tales"
   },
   {
     "id": 26,
-    "first_name": "Dobbe"
+    "first_name": "Dobbe",
+    "last_name": "Dobbesson",
+    "display_name": "Dobbe",
+    "ltu_id": "dobbe-dobbe"
   },
   {
     "id": 27,
@@ -179,6 +178,7 @@
     "id": 30,
     "first_name": "Nils",
     "last_name": "Salomonsson",
+    "display_name": "Slalle",
     "ltu_id": "nilsal-5",
     "joined_on": "2025-11-04"
   },
@@ -332,6 +332,7 @@
     "id": 52,
     "first_name": "Oleksandra",
     "last_name": "Pozniakova",
+    "display_name": "Sasha",
     "ltu_id": "olepoz-5",
     "joined_on": "2026-09-01"
   }

@@ -108,5 +108,60 @@
       "0 bord och 1 manuella poäng flyttades från Kjelle till Nils Kjellberg.",
       "Visningsnamn: – → Kjelle"
     ]
+  },
+  {
+    "at": "2026-09-24T10:51:20Z",
+    "by": "nils.salomonsson@hotmail.com",
+    "message": "Ändrad medlem: Dobbe Dobbesson",
+    "lps": [],
+    "details": [
+      "Efternamn: – → Dobbesson",
+      "Visningsnamn: – → Dobbe",
+      "LTU-id: – → dobbe-dobbe"
+    ]
+  },
+  {
+    "at": "2026-09-24T10:55:41Z",
+    "by": "nils.salomonsson@hotmail.com",
+    "message": "Slog ihop Slalle med Nils Salomonsson",
+    "lps": [
+      "lp1-26-27"
+    ],
+    "details": [
+      "0 bord och 1 manuella poäng flyttades från Slalle till Nils Salomonsson.",
+      "Visningsnamn: – → Slalle"
+    ]
+  },
+  {
+    "at": "2026-09-24T10:55:41Z",
+    "by": "nils.salomonsson@hotmail.com",
+    "message": "Slog ihop Sasha med Oleksandra Pozniakova",
+    "lps": [
+      "lp1-26-27"
+    ],
+    "details": [
+      "0 bord och 1 manuella poäng flyttades från Sasha till Oleksandra Pozniakova.",
+      "Visningsnamn: – → Sasha"
+    ]
+  },
+  {
+    "at": "2026-09-24T10:55:49Z",
+    "by": "nils.salomonsson@hotmail.com",
+    "message": "Ändrad medlem: Eve Evesson",
+    "lps": [],
+    "details": [
+      "Efternamn: – → Evesson",
+      "Visningsnamn: – → Eve"
+    ]
+  },
+  {
+    "at": "2026-09-24T10:55:49Z",
+    "by": "nils.salomonsson@hotmail.com",
+    "message": "Ändrad medlem: Tales Talesson",
+    "lps": [],
+    "details": [
+      "Efternamn: – → Talesson",
+      "Visningsnamn: – → Tales"
+    ]
   }
 ]

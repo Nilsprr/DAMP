@@ -56,3 +56,32 @@ def test_import_points_refuses_to_add_twice_without_replace(runner, tmp_path):
     assert runner.invoke(args=args).exit_code == 0
     assert runner.invoke(args=args).exit_code != 0
     assert runner.invoke(args=args + ["--replace"]).exit_code == 0
+
+
+def test_merge_a_nickname_into_a_listed_member(runner, data_dir):
+    members = read(data_dir, "members.json") + [{"id": 9, "first_name": "Kalle"}]
+    write_files(data_dir, {"members.json": members, "manual-points.json": [{"date": "2026-09-22", "member": 9, "points": 14}]})
+    result = runner.invoke(args=["merge-members", "Kalle", "Bert Berg"])
+    assert result.exit_code == 0, result.output
+    members = read(data_dir, "members.json")
+    assert not any(m["id"] == 9 for m in members)
+    assert [m for m in members if m["id"] == 2] == [{"id": 2, "first_name": "Bert", "last_name": "Berg", "display_name": "Kalle"}]
+    assert read(data_dir, "manual-points.json") == [{"date": "2026-09-22", "member": 2, "points": 14}]
+    [event] = history.read_all(data_dir)
+    assert event["message"] == "Slog ihop Kalle med Bert Berg" and event["lps"] == ["lp1-26-27"]
+    assert "Visningsnamn: – → Kalle" in event["details"]
+
+
+def test_merge_moves_table_results_and_can_skip_the_display_name(runner, data_dir):
+    result = runner.invoke(args=["merge-members", "Dan Dahl", "Anna Andersson", "--display-name", ""])
+    assert result.exit_code == 0, result.output
+    assert [s["member"] for s in read(data_dir, "tables/2026-09-01-2.json")["players"]] == [1, 5]
+    assert "display_name" not in [m for m in read(data_dir, "members.json") if m["id"] == 1][0]
+
+
+def test_merge_refuses_members_at_the_same_table(runner, data_dir):
+    before = read(data_dir, "members.json")
+    result = runner.invoke(args=["merge-members", "Anna Andersson", "Bert Berg"])
+    assert result.exit_code != 0 and "samma bord" in result.output
+    assert read(data_dir, "members.json") == before
+    assert history.read_all(data_dir) == []

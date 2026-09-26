@@ -68,6 +68,14 @@ uv run flask --app damp import-points fil.tsv --lp "LP4 25/26" --spread --seed 2
 
 Ställningarna från innan sajten fanns (`data/*.tsv`) är redan importerade till `data/manual-points.json`.
 
+## Slå ihop medlemmar
+
+Visar det sig att ett smeknamn är någon i medlemslistan, flyttar `merge-members` alla bord och poäng dit, tar bort den gamla posten och behåller smeknamnet som visningsnamn. Två som suttit vid samma bord går inte att slå ihop. Ändringen loggas i historiken.
+
+```bash
+uv run flask --app damp merge-members Slalle "Nils Salomonsson"   # blir Nils "Slalle" Salomonsson
+```
+
 ## Regler (kontrolleras i bygget och i admin)
 
 - Varje bord poängsätts för sig. Spelarna står i placeringsordning, och ett bord har minst 2 spelare.
